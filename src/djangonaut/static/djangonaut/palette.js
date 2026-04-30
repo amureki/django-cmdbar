@@ -1,8 +1,8 @@
 (function () {
   "use strict";
 
-  const cfg = window.__djangonaut__ || {};
-  const endpoint = cfg.endpoint || "/djangonaut/commands/";
+  const script = document.currentScript;
+  const endpoint = script?.dataset.endpoint || "/djangonaut/commands/";
 
   const host = document.createElement("djangonaut-palette");
   host.setAttribute("data-open", "false");
@@ -10,7 +10,13 @@
 
   root.innerHTML = `
     <style>
-      :host { all: initial; }
+      :host {
+        all: initial;
+        position: fixed; inset: 0;
+        z-index: 2147483000;
+        pointer-events: none;
+      }
+      :host([data-open="true"]) { pointer-events: auto; }
       .backdrop {
         position: fixed; inset: 0;
         background: rgba(15, 15, 20, 0.45);

@@ -1,5 +1,0 @@
-/* Minimal host-page styles. The palette UI itself lives inside a shadow root
-   (see palette.js) so host CSS doesn't bleed in. This file only carries the
-   host-level selector for positioning. */
-djangonaut-palette { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; }
-djangonaut-palette[data-open="true"] { pointer-events: auto; }

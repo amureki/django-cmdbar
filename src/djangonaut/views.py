@@ -1,4 +1,5 @@
 from difflib import SequenceMatcher
+from urllib.parse import urlencode
 
 from django.contrib import admin
 from django.http import Http404, JsonResponse
@@ -67,23 +68,20 @@ def _results_for_model(request, parsed):
                 "label": str(name),
                 "hint": f"{app_label}.{object_name} — list",
                 "url": changelist,
-                "icon": "list",
             })
         elif parsed.action == "search":
             results.append({
                 "label": f"{name}: “{parsed.term}”",
                 "hint": f"{app_label}.{object_name} — search",
-                "url": f"{changelist}?q={parsed.term}",
-                "icon": "search",
+                "url": f"{changelist}?{urlencode({'q': parsed.term})}",
             })
         elif parsed.action == "add" and perms.get("add") and add_url:
             results.append({
                 "label": f"Add {name}",
                 "hint": f"{app_label}.{object_name} — new",
                 "url": add_url,
-                "icon": "plus",
             })
-        elif parsed.action == "change" and model_cls is not None and perms.get("change"):
+        elif parsed.action == "change" and model_cls is not None and (perms.get("view") or perms.get("change")):
             try:
                 url = _change_url(model_cls, parsed.pk)
             except NoReverseMatch:
@@ -92,7 +90,6 @@ def _results_for_model(request, parsed):
                 "label": f"{name} #{parsed.pk}",
                 "hint": f"{app_label}.{object_name} — edit",
                 "url": url,
-                "icon": "edit",
             })
     return results
 
@@ -120,7 +117,6 @@ def _results_for_app(request, parsed):
             "label": str(app["name"]),
             "hint": f"@{app['app_label']} — app index",
             "url": url,
-            "icon": "folder",
         })
     return results
 

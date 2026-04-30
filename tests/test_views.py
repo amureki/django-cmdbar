@@ -30,9 +30,9 @@ def test_endpoint_lists_models():
 def test_search_action_builds_q_param():
     c = Client()
     _login_staff(c, is_superuser=True)
-    r = c.get("/djangonaut/commands/?q=user+rick")
+    r = c.get("/djangonaut/commands/", {"q": "user rick & morty"})
     urls = [x["url"] for x in r.json()["results"]]
-    assert any(u.endswith("?q=rick") for u in urls)
+    assert any(u.endswith("?q=rick+%26+morty") for u in urls)
 
 
 def test_add_action_returns_add_url():
