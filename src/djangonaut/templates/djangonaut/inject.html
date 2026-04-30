@@ -1,0 +1,4 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'djangonaut/palette.css' %}">
+<script>window.__djangonaut__ = { endpoint: "{{ commands_url|escapejs }}" };</script>
+<script src="{% static 'djangonaut/palette.js' %}" defer></script>
