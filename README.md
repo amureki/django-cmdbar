@@ -1,10 +1,12 @@
 # Djangonaut
 
-Keyboard navigation for Django admin. Press Cmd+K or Ctrl+K to open model lists,
-filtered searches, and individual records.
+A navigation palette for Django admin. Press Cmd+K or Ctrl+K to find models,
+search records, or jump to a record by primary key.
 
-Requires Python 3.14 or 3.15 and Django 6.1. Uses plain JavaScript and CSS, with no
-frontend dependencies, build step, middleware, or additional URLs.
+Supports maintained [Python](https://devguide.python.org/versions/) and
+[Django](https://www.djangoproject.com/download/#supported-versions) releases.
+Uses plain JavaScript and CSS, with no frontend dependencies, build step,
+middleware, or additional URLs.
 
 ## Install
 
