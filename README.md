@@ -24,8 +24,7 @@ INSTALLED_APPS = [
 ]
 ```
 
-Keep the project's existing admin URL configuration. Run `collectstatic` as usual
-when deploying.
+Keep the project's existing admin URL configuration.
 
 ## Queries
 
