@@ -11,6 +11,10 @@ Supports maintained [Python](https://devguide.python.org/versions/) and
 Uses plain JavaScript and CSS, with no frontend dependencies, build step,
 middleware, or additional URLs.
 
+**Start with your models:** press Cmd+K or Ctrl+K to browse the models you can access.
+
+![Djangonaut's empty search showing Articles, Departments, Groups, and Users.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-models.png)
+
 **Search records:** `user alice` opens the Users list filtered by “alice”.
 
 ![Djangonaut showing the query user alice and the result Search for alice.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-search.png)
