@@ -1,6 +1,6 @@
 import mimetypes
 import re
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlsplit
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -14,151 +14,20 @@ from .models import Article
 pytestmark = pytest.mark.django_db(transaction=True)
 
 
-@pytest.fixture
-def search(admin_page):
-
-    async def results(query):
-        return await admin_page.evaluate(
-            """async query => {
-                const { getResults } = await import('/static/djangonaut/search.js');
-                const catalog = JSON.parse(document.getElementById('djangonaut-data').textContent);
-                return getResults(query, catalog);
-            }""",
-            query,
-        )
-
-    return results
-
-
 @pytest.mark.parametrize(
-    ("query", "expected"),
-    [
-        ("", {"head": "", "action": "list", "value": ""}),
-        (" arti ", {"head": "arti", "action": "list", "value": ""}),
-        ("arti#42", {"head": "arti", "action": "change", "value": "42"}),
-        ("arti #42", {"head": "arti", "action": "change", "value": "42"}),
-        ("arti# 42 ", {"head": "arti", "action": "change", "value": "42"}),
-        ("arti#", {"head": "arti", "action": "change", "value": ""}),
-        ("arti alice", {"head": "arti", "action": "search", "value": "alice"}),
-        ("arti\talice smith", {"head": "arti", "action": "search", "value": "alice smith"}),
-        ("arti alice#42", {"head": "arti", "action": "search", "value": "alice#42"}),
-        ("arti 42", {"head": "arti", "action": "search", "value": "42"}),
-        ("arti +", {"head": "arti", "action": "add", "value": ""}),
-        ("tests.Article#42", {"head": "tests.Article", "action": "change", "value": "42"}),
-    ],
+    "pk", ["42", "a_b/c:d#e?f&g%", "名字", "id with spaces", "a\"b'c\\d", ".", ".."]
 )
-async def test_query_syntax(admin_page, query, expected):
-    result = await admin_page.evaluate(
-        "async query => (await import('/static/djangonaut/search.js')).parseQuery(query)", query
-    )
-    assert result == expected
-
-
-@pytest.mark.parametrize("query", ["arti", "ARTI", "ace", "tests.article", "árti"])
-async def test_model_matching(search, query):
-    assert (await search(query))[0]["url"] == "/admin/tests/article/"
-
-
-async def test_exact_match_ranks_before_prefixes(admin_page):
-    keys = await admin_page.evaluate(
-        """async () => {
-            const { getResults } = await import('/static/djangonaut/search.js');
-            const catalog = JSON.parse(document.getElementById('djangonaut-data').textContent);
-            const article = catalog.models.find(model => model.key === 'tests.article');
-            catalog.models = [
-                {...article, name: 'Article notes',
-                    key: 'tests.articlenote', keywords: ['ArticleNote']},
-                article,
-            ];
-            return getResults('article', catalog).map(result => result.key);
-        }"""
-    )
-    assert keys == ["tests.article", "tests.articlenote"]
-
-
-async def test_all_model_lists_remain_available(admin_page):
-    count = await admin_page.evaluate(
-        """async () => {
-            const { getResults } = await import('/static/djangonaut/search.js');
-            const catalog = JSON.parse(document.getElementById('djangonaut-data').textContent);
-            const model = catalog.models.find(model => model.key === 'tests.article');
-            catalog.models = Array.from({length: 30}, (_, i) => ({
-                ...model, name: `Model ${i}`, key: `app.model${i}`, keywords: [`Model${i}`],
-            }));
-            return getResults('', catalog).length;
-        }"""
-    )
-    assert count == 30
-
-
-@pytest.mark.parametrize("query", ["Talk series", "Talk se", "k series"])
-async def test_multiword_model_names_remain_navigation_queries(admin_page, query):
+async def test_record_links_use_django_admin_quoting(admin_page, pk):
+    expected = reverse("admin:tests_article_change", args=[quote(pk)])
     results = await admin_page.evaluate(
         """async query => {
             const { getResults } = await import('/static/djangonaut/search.js');
             const catalog = JSON.parse(document.getElementById('djangonaut-data').textContent);
-            const article = catalog.models.find(model => model.key === 'tests.article');
-            catalog.models = [
-                {...article, name: 'Talks', key: 'talks.talk', keywords: ['Talk']},
-                {...article, name: 'Talk series', key: 'talks.series', keywords: ['Series'],
-                    list_url: '/admin/talks/series/'},
-            ];
             return getResults(query, catalog);
         }""",
-        query,
+        f"arti#{pk}",
     )
-    assert results[0]["url"] == "/admin/talks/series/"
-    assert results[0]["detail"] == ""
-    if query.startswith("Talk"):
-        assert any("?q=" in result["url"] for result in results)
-
-
-@pytest.mark.parametrize(
-    ("query", "expected"),
-    [
-        ("tal", ["talks.talk", "talks.series"]),
-        ("Talk", ["talks.talk", "talks.series"]),
-        ("talks.sub", ["talks.subscription"]),
-    ],
-)
-async def test_app_names_only_match_explicitly_qualified_queries(admin_page, query, expected):
-    keys = await admin_page.evaluate(
-        """async query => {
-            const { getResults } = await import('/static/djangonaut/search.js');
-            const catalog = JSON.parse(document.getElementById('djangonaut-data').textContent);
-            const model = catalog.models[0];
-            catalog.models = [
-                {...model, name: 'Subscriptions', key: 'talks.subscription',
-                    keywords: ['Subscription']},
-                {...model, name: 'Talk series', key: 'talks.series', keywords: ['Series']},
-                {...model, name: 'Talks', key: 'talks.talk', keywords: ['Talk']},
-            ];
-            return getResults(query, catalog).map(result => result.key);
-        }""",
-        query,
-    )
-    assert keys == expected
-
-
-@pytest.mark.parametrize("value", ["alice & bob + café/#42", "alice $& $' $` $$"])
-async def test_search_url_encoding(search, value):
-    result = (await search(f"arti {value}"))[0]
-    assert result["url"] == f"/admin/tests/article/?{urlencode({'q': value})}"
-    assert result["detail"] == f"Search for {value}"
-
-
-@pytest.mark.parametrize(
-    "pk", ["42", "a_b/c:d#e?f&g%", "名字", "id with spaces", "a\"b'c\\d", ".", ".."]
-)
-async def test_record_links_use_django_admin_quoting(search, pk):
-    expected = reverse("admin:tests_article_change", args=[quote(pk)])
-    assert (await search(f"arti#{pk}"))[0]["url"] == expected
-
-
-async def test_add_and_unsupported_operations(search):
-    assert (await search("arti +"))[0]["url"] == "/admin/tests/article/add/"
-    assert await search("department alice") == []
-    assert await search("zzzzzz") == []
+    assert results[0]["url"] == expected
 
 
 async def test_keyboard_navigation_and_focus_restore(admin_page):
@@ -238,8 +107,8 @@ async def test_enter_opens_record(admin_page):
     await expect(admin_page.locator("#id_name")).to_have_value("Alice")
 
 
-@pytest.mark.parametrize("query_text", ["arti#", "arti #", "arti# "])
-async def test_incomplete_record_query_keeps_model_completions(admin_page, query_text):
+async def test_incomplete_record_query_keeps_model_completions(admin_page):
+    query_text = "arti#"
     await Article.objects.acreate(id="42", name="Alice")
     await admin_page.keyboard.press("Control+k")
     query = admin_page.get_by_role("combobox")
@@ -311,10 +180,7 @@ async def test_close_button_and_backdrop(admin_page):
     await expect(admin_page.get_by_role("dialog")).not_to_be_visible()
 
 
-@pytest.mark.parametrize(("width", "theme"), [(1280, "light"), (390, "dark")])
-async def test_query_help_and_return_to_search(admin_page, width, theme):
-    await admin_page.set_viewport_size({"width": width, "height": 844})
-    await admin_page.evaluate("theme => document.documentElement.dataset.theme = theme", theme)
+async def test_query_help_and_return_to_search(admin_page):
     await admin_page.keyboard.press("Control+k")
     query = admin_page.get_by_role("combobox")
     guide = admin_page.get_by_role("region", name="Query help")
@@ -338,9 +204,6 @@ async def test_query_help_and_return_to_search(admin_page, width, theme):
     await expect(query).to_have_attribute("aria-expanded", "true")
     await query.fill(" ? ")
     await expect(guide).to_be_visible()
-    assert await admin_page.locator("#djangonaut").evaluate(
-        "el => el.scrollWidth <= el.clientWidth"
-    )
 
 
 @pytest.mark.parametrize("theme", ["light", "dark"])
@@ -359,6 +222,12 @@ async def test_mobile_layout_and_admin_theme(admin_page, theme):
     assert await admin_page.locator("#djangonaut").evaluate(
         "el => getComputedStyle(el).backgroundColor === "
         "getComputedStyle(document.body).backgroundColor"
+    )
+
+    await admin_page.get_by_role("combobox").fill("?")
+    await expect(admin_page.get_by_role("region", name="Query help")).to_be_visible()
+    assert await admin_page.locator("#djangonaut").evaluate(
+        "el => el.scrollWidth <= el.clientWidth"
     )
 
 

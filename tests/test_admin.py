@@ -108,14 +108,6 @@ def test_search_fields_can_depend_on_request(client, superuser):
     assert article["searchable"] is False
 
 
-def test_explicit_site_for_custom_admin_views(rf, superuser):
-    request = rf.get("/custom-admin-view/")
-    request.user = superuser
-    context = RequestContext(request)
-    result = djangonaut(context, site=backoffice)
-    assert result["palette"]["models"][0]["list_url"].startswith("/backoffice/")
-
-
 def test_tag_outside_admin_is_empty(rf, superuser):
     request = rf.get("/")
     request.user = superuser
@@ -141,8 +133,8 @@ def test_model_labels_are_safe_in_json(client, superuser):
     assert next(model for model in models if model["key"] == "tests.article")["name"] == label
 
 
-def test_explicit_template_integration(rf, superuser):
-    request = rf.get("/backoffice/")
+def test_explicit_template_integration_for_custom_admin_views(rf, superuser):
+    request = rf.get("/custom-admin-view/")
     request.user = superuser
     output = Template("{% load djangonaut %}{% djangonaut site=site %}").render(
         RequestContext(request, {"site": backoffice})
