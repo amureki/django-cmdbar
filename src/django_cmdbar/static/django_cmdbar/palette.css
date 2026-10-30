@@ -68,7 +68,7 @@
   color: var(--body-fg);
 }
 
-#django_cmdbar button:focus-visible {
+#django_cmdbar :is(button, a):focus-visible {
   outline: 2px solid var(--link-fg);
   outline-offset: -2px;
 }

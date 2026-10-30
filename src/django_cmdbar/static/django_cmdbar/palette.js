@@ -141,8 +141,8 @@ if (dialog) {
   dialog.addEventListener("keydown", (event) => {
     if (event.key !== "Tab") return;
     const controls = Array.from(
-      dialog.querySelectorAll("input, button:not([hidden])"),
-    );
+      dialog.querySelectorAll("input, button, a[href]"),
+    ).filter((control) => control.getClientRects().length > 0);
     if (!event.shiftKey && document.activeElement === controls.at(-1)) {
       event.preventDefault();
       controls[0].focus();

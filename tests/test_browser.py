@@ -220,6 +220,24 @@ async def test_query_help_and_return_to_search(admin_page):
     await expect(admin_page).to_have_url("http://testserver/admin/")
     await expect(query).to_be_focused()
 
+    for name, url in (
+        ("GitHub repository", "https://github.com/amureki/django-cmdbar"),
+        ("Report an issue", "https://github.com/amureki/django-cmdbar/issues/new"),
+    ):
+        link = guide.get_by_role("link", name=name)
+        await expect(link).to_have_attribute("href", url)
+        await expect(link).to_have_attribute("target", "_blank")
+    await query.press("Tab")
+    await admin_page.keyboard.press("Tab")
+    await admin_page.keyboard.press("Tab")
+    await expect(guide.get_by_role("link", name="GitHub repository")).to_be_focused()
+    await admin_page.keyboard.press("Tab")
+    await expect(guide.get_by_role("link", name="Report an issue")).to_be_focused()
+    await admin_page.keyboard.press("Tab")
+    await expect(query).to_be_focused()
+    await query.press("Shift+Tab")
+    await expect(guide.get_by_role("link", name="Report an issue")).to_be_focused()
+
     await query.fill("arti alice?")
     await expect(guide).not_to_be_visible()
     await expect(admin_page.get_by_role("option")).to_contain_text("Search for alice?")
