@@ -117,32 +117,32 @@ async def test_all_model_lists_remain_available(search, catalog):
     assert len(await search("")) == 30
 
 
-@pytest.mark.parametrize("query", ["Talk series", "Talk se", "k series"])
+@pytest.mark.parametrize("query", ["Article groups", "Article gr", "e groups"])
 async def test_multiword_model_names_remain_navigation_queries(search, catalog, query):
     article = catalog["models"][0]
     catalog["models"] = [
-        {**article, "name": "Talks", "key": "talks.talk", "keywords": ["Talk"]},
+        {**article, "name": "Articles", "key": "content.article", "keywords": ["Article"]},
         {
             **article,
-            "name": "Talk series",
-            "key": "talks.series",
-            "keywords": ["Series"],
-            "list_url": "/admin/talks/series/",
+            "name": "Article groups",
+            "key": "content.group",
+            "keywords": ["Group"],
+            "list_url": "/admin/content/group/",
         },
     ]
     results = await search(query)
-    assert results[0]["url"] == "/admin/talks/series/"
+    assert results[0]["url"] == "/admin/content/group/"
     assert results[0]["detail"] == ""
-    if query.startswith("Talk"):
+    if query == "Article gr":
         assert any("?q=" in result["url"] for result in results)
 
 
 @pytest.mark.parametrize(
     ("query", "expected"),
     [
-        ("tal", ["talks.talk", "talks.series"]),
-        ("Talk", ["talks.talk", "talks.series"]),
-        ("talks.sub", ["talks.subscription"]),
+        ("art", ["content.article", "content.group"]),
+        ("Article", ["content.article", "content.group"]),
+        ("content.sub", ["content.subscription"]),
     ],
 )
 async def test_app_names_only_match_explicitly_qualified_queries(search, catalog, query, expected):
@@ -151,11 +151,11 @@ async def test_app_names_only_match_explicitly_qualified_queries(search, catalog
         {
             **model,
             "name": "Subscriptions",
-            "key": "talks.subscription",
+            "key": "content.subscription",
             "keywords": ["Subscription"],
         },
-        {**model, "name": "Talk series", "key": "talks.series", "keywords": ["Series"]},
-        {**model, "name": "Talks", "key": "talks.talk", "keywords": ["Talk"]},
+        {**model, "name": "Article groups", "key": "content.group", "keywords": ["Group"]},
+        {**model, "name": "Articles", "key": "content.article", "keywords": ["Article"]},
     ]
     assert [result["key"] for result in await search(query)] == expected
 
@@ -171,3 +171,53 @@ async def test_add_and_unsupported_operations(search):
     assert (await search("arti +"))[0]["url"] == "/admin/tests/article/add/"
     assert await search("department alice") == []
     assert await search("zzzzzz") == []
+
+
+async def test_space_qualified_model_name(search):
+    assert (await search("tests article"))[0]["url"] == "/admin/tests/article/"
+
+
+@pytest.mark.parametrize(
+    ("query", "destination"),
+    [
+        ("Article groups#42", "/admin/content/group/42/change/"),
+        ("Article groups #42", "/admin/content/group/42/change/"),
+        ("árticle GROUPS#42", "/admin/content/group/42/change/"),
+        ("Article groups +", "/admin/content/group/add/"),
+        ("Article groups alice", "/admin/content/group/?q=alice"),
+        ("Article groups alice#42", "/admin/content/group/?q=alice%2342"),
+        ("content group#42", "/admin/content/group/42/change/"),
+        ("Article groups archive#42", "/admin/content/archive/42/change/"),
+    ],
+)
+async def test_longest_multiword_model_head(search, catalog, query, destination):
+    article = catalog["models"][0]
+    catalog["models"] = [
+        {**article, "name": "Articles", "key": "content.article", "keywords": ["Article"]},
+        *[
+            {
+                **article,
+                "name": name,
+                "key": f"content.{model}",
+                "keywords": [model],
+                "list_url": f"/admin/content/{model}/",
+                "change_url": f"/admin/content/{model}/__djangonaut_pk__/change/",
+                "add_url": f"/admin/content/{model}/add/",
+            }
+            for name, model in [("Article groups", "group"), ("Article groups archive", "archive")]
+        ],
+    ]
+    results = await search(query)
+    assert results[0]["url"] == destination
+    assert all(result["key"] != "content.article" for result in results)
+
+
+async def test_multiword_incomplete_pk_and_unavailable_actions(search, catalog):
+    catalog["models"][0].update(
+        name="Article groups", keywords=["Group"], searchable=False, add_url=None
+    )
+    result = (await search("Article groups#"))[0]
+    assert result["url"] is None
+    assert result["detail"] == "Enter a record ID"
+    assert await search("Article groups alice") == []
+    assert await search("Article groups +") == []

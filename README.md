@@ -30,40 +30,27 @@ Keep the project's existing admin URL configuration.
 
 For Django's built-in User model:
 
-| Query | Destination |
+| Query | Result |
 | --- | --- |
 | `user` | User list |
 | `user#42` | User with primary key 42 |
 | `user #42` | Same record |
 | `user alice` | User list filtered with `?q=alice` |
 | `user +` | User creation form |
-| `auth.User` | User list in the accounts app |
+| `auth.User` | User list in the auth app |
 
-Type `?` to show a short syntax guide. Clear it to return to model navigation.
+Type `?` or click the **?** button to show a short syntax guide.
 
-Matching ignores case and accents. Exact model names rank first, followed by
-prefixes, substrings, and abbreviated character sequences. Results include the
-app and model name to distinguish models with similar names. App names only match
-when the query includes a dot, such as `auth.User`. Shorter model-name
-prefix matches rank ahead of longer ones. An empty query shows all available
-model lists.
+Matching ignores case and accents and supports abbreviations. Use `auth.User` or
+`auth User` to distinguish models from different apps.
 
-Names containing spaces, such as `Talk series`, remain model navigation queries.
-When the same input can also mean a filtered search, model-name matches appear
-before search suggestions.
+Names containing spaces use the same syntax, such as `Article groups#42`.
 
-Search is available for models whose `ModelAdmin.get_search_fields(request)`
-returns fields. Numeric text without `#`, such as `user 42`, is a search term.
-String and UUID primary keys work with `#` too. Djangonaut applies Django admin's
-primary-key quoting before URL encoding.
-Typing `#` keeps matching models visible and prompts for a record ID. Navigation
-waits until the ID is present.
+Search requires configured admin search fields. Use `#` for an exact primary key;
+`user 42` performs a text search. String and UUID primary keys are supported.
 
-The palette does not fetch records or preview names. It builds links locally from
-model metadata. Django's destination views check record existence, queryset
-restrictions, and object permissions. The palette uses the active admin site's
-model and module permissions, omits unavailable operations, and stays out of
-login pages and related-object popups.
+The palette shows models and actions allowed by your admin permissions. Record
+names are not previewed; Django checks access when you open a destination.
 
 ## Keyboard
 
@@ -71,19 +58,17 @@ login pages and related-object popups.
 - Up and Down select a destination.
 - Enter opens the selected destination.
 - Cmd+Enter or Ctrl+Enter opens it in a new tab.
-- Escape or the Close button closes the palette and restores focus.
+- Escape closes the palette.
 
-The palette uses a native modal dialog and Django admin's theme variables. It
-follows the admin's selected light or dark theme, including manual theme changes.
+The palette follows Django admin's light or dark theme.
 
 ## Custom admin sites and templates
 
-Standard `AdminSite` and `ModelAdmin` views work with custom site names and URL
-prefixes. Each palette lists only models registered with its active site.
+Custom admin sites and URL prefixes are supported. Each palette lists its site's
+models.
 
 If your project overrides `admin/base_site.html`, extend `admin/base_site.html`
-and preserve `block.super` in the `extrastyle` and `extrabody` blocks. Django will
-include Djangonaut's template through the normal template inheritance chain.
+and preserve `block.super` in the `extrastyle` and `extrabody` blocks.
 
 For templates that bypass that chain, add the assets and tag explicitly instead
 of using Djangonaut's template extension:
@@ -111,9 +96,6 @@ the tag:
 {% djangonaut site=admin_site %}
 ```
 
-Include the tag once per page. It renders nothing for users without access to the
-site or when no model navigation is available.
-
 ## Development
 
 ```sh
@@ -124,9 +106,6 @@ uv run ruff check .
 uv run ruff format --check .
 uv build
 ```
-
-The browser tests use Chromium and route requests through Django's test client.
-They do not need a running development server. CI tests Python 3.14 and 3.15.
 
 Djangonaut is under development. Its integration and query syntax can change
 before the first stable release.

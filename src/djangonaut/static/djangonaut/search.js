@@ -1,9 +1,23 @@
-export function parseQuery(raw) {
+export function parseQuery(raw, models = []) {
   const query = raw.trim();
   const match = /^(\S+?)(?:\s*#([\s\S]*)|\s+([\s\S]*))?$/.exec(query);
   if (!match) return { head: "", action: "list", value: "" };
 
-  const [, head, pk, rest] = match;
+  let [, head, pk, rest] = match;
+  const names = new Set(models.flatMap((model) =>
+    [model.name, ...model.keywords, model.key.replace(".", " ")]
+      .filter((name) => /\s/.test(name))
+      .map(normalize),
+  ));
+  // A complete multiword model name takes precedence over a shorter model prefix.
+  for (const boundary of query.matchAll(/(?=\s|#|$)/g)) {
+    const prefix = query.slice(0, boundary.index).trimEnd();
+    if (!names.has(normalize(prefix))) continue;
+    head = prefix;
+    const suffix = query.slice(boundary.index).trim();
+    pk = suffix.startsWith("#") ? suffix.slice(1) : undefined;
+    rest = suffix;
+  }
   if (pk !== undefined) return { head, action: "change", value: pk.trim() };
   const value = (rest || "").trim();
   if (value === "+") return { head, action: "add", value: "" };
@@ -38,7 +52,11 @@ function matchModels({ head, action, value }, catalog) {
   return catalog.models.flatMap((model) => {
     const names = query.includes(".")
       ? [model.key]
-      : [model.name, ...model.keywords];
+      : [
+          model.name,
+          ...model.keywords,
+          ...(query.includes(" ") ? [model.key.replace(".", " ")] : []),
+        ];
     const rank = Math.max(...names.map((word) => score(query, word)));
     if (!rank) return [];
 
@@ -84,7 +102,7 @@ function matchModels({ head, action, value }, catalog) {
 }
 
 export function getResults(raw, catalog) {
-  const query = parseQuery(raw);
+  const query = parseQuery(raw, catalog.models);
   const results = matchModels(query, catalog);
   if (query.action === "search") {
     const modelNames = matchModels(

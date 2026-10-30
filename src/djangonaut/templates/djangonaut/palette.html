@@ -8,6 +8,7 @@
              aria-controls="djangonaut-results" aria-autocomplete="list" aria-describedby="djangonaut-help"
              placeholder="{% translate 'Search models…' %}"
              autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+      <button type="button" class="djangonaut-help-button" aria-label="{% translate 'Query help' %}" aria-controls="djangonaut-guide" aria-expanded="false"><kbd>?</kbd></button>
       <button type="button" class="djangonaut-close" aria-label="{% translate 'Close navigation' %}"><kbd>Esc</kbd></button>
     </div>
     <ul id="djangonaut-results" role="listbox" aria-label="{% translate 'Destinations' %}"></ul>
@@ -18,14 +19,11 @@
         <dt><code>model text</code></dt><dd>{% translate "Search within a model" %}</dd>
         <dt><code>model +</code></dt><dd>{% translate "Add a record" %}</dd>
       </dl>
+      <p>{% translate "Use Up and Down to select and Enter to open. Escape closes the palette." %}</p>
       <p>{% translate "Ctrl/Command + Enter opens a new tab." %}</p>
     </section>
     <p class="djangonaut-empty" role="status" hidden>{% translate "No matches. Try a model name." %}</p>
-    <p id="djangonaut-help" class="djangonaut-sr-only">{% translate "Type a model name, add # and a record ID, or add a space and a search term. Use arrow keys to select and Enter to open. Ctrl/Command + Enter opens a new tab." %}</p>
-    <footer aria-hidden="true">
-      <span><kbd>↑ ↓</kbd> {% translate "Select" %}</span>
-      <span><kbd>Enter</kbd> {% translate "Open" %}</span>
-    </footer>
+    <p id="djangonaut-help" class="djangonaut-sr-only">{% translate "Type a model name, add # and a record ID, or add a space and a search term. Use Up and Down to select and Enter to open. Ctrl/Command + Enter opens a new tab." %}</p>
   </dialog>
   <script type="module" src="{% static 'djangonaut/palette.js' %}"></script>
 {% endif %}

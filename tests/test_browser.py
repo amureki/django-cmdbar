@@ -50,6 +50,8 @@ async def test_keyboard_navigation_and_focus_restore(admin_page):
     await query.press("ArrowUp")
     await expect(options.last).to_have_attribute("aria-selected", "true")
     await query.press("Tab")
+    await expect(admin_page.get_by_role("button", name="Query help")).to_be_focused()
+    await admin_page.keyboard.press("Tab")
     await expect(admin_page.get_by_role("button", name="Close navigation")).to_be_focused()
     await admin_page.keyboard.press("Tab")
     await expect(query).to_be_focused()
@@ -256,3 +258,48 @@ async def test_manifest_static_assets_without_unhashed_files(admin_page, setting
     query = admin_page.get_by_role("combobox")
     await query.fill("arti#42")
     await expect(admin_page.get_by_role("option")).to_contain_text("Open record #42")
+
+
+@pytest.mark.parametrize(
+    ("query_text", "destination"),
+    [("arti", "/admin/tests/article/"), ("arti +", "/admin/tests/article/add/")],
+)
+async def test_single_enter_opens_destination(admin_page, query_text, destination):
+    await admin_page.keyboard.press("Control+k")
+    query = admin_page.get_by_role("combobox")
+    await query.fill(query_text)
+    await query.press("Enter")
+    await expect(admin_page).to_have_url("http://testserver" + destination)
+
+
+@pytest.mark.parametrize(
+    ("suffix", "destination"),
+    [
+        ("", "/admin/tests/article/"),
+        (" Alice", "/admin/tests/article/?q=Alice"),
+        ("#42", "/admin/tests/article/42/change/"),
+        (" +", "/admin/tests/article/add/"),
+    ],
+)
+async def test_multiword_model_actions(admin_page, monkeypatch, suffix, destination):
+    monkeypatch.setattr(Article._meta, "verbose_name_plural", "Article groups")
+    await Article.objects.acreate(id="42", name="Alice")
+    await admin_page.reload()
+    await admin_page.keyboard.press("Control+k")
+    query = admin_page.get_by_role("combobox")
+    await query.fill("Article groups" + suffix)
+    await query.press("Enter")
+    await expect(admin_page).to_have_url("http://testserver" + destination)
+
+
+async def test_help_button_preserves_query(admin_page):
+    await admin_page.keyboard.press("Control+k")
+    query = admin_page.get_by_role("combobox")
+    await query.fill("arti Alice")
+    await admin_page.get_by_role("button", name="Query help").click()
+    await expect(admin_page.get_by_role("region", name="Query help")).to_be_visible()
+    await query.press("Escape")
+    await expect(query).to_have_value("arti Alice")
+    await expect(admin_page.get_by_role("option")).to_contain_text("Search for Alice")
+    await query.press("Escape")
+    await expect(admin_page.get_by_role("dialog")).not_to_be_visible()

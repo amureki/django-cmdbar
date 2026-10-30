@@ -6,14 +6,15 @@ if (dialog) {
     document.getElementById("djangonaut-data").textContent,
   );
   const input = dialog.querySelector("input");
-  const closeButton = dialog.querySelector("button");
+  const closeButton = dialog.querySelector(".djangonaut-close");
+  const helpButton = dialog.querySelector(".djangonaut-help-button");
   const list = dialog.querySelector("ul");
   const empty = dialog.querySelector(".djangonaut-empty");
   const guide = dialog.querySelector("#djangonaut-guide");
-  const footer = dialog.querySelector("footer");
   let results = [];
   let selected = 0;
   let previousFocus;
+  let helpOpen = false;
 
   function select(index) {
     selected = index;
@@ -30,10 +31,10 @@ if (dialog) {
   }
 
   function render() {
-    const showHelp = input.value.trim() === "?";
+    const showHelp = helpOpen || input.value.trim() === "?";
+    helpButton.setAttribute("aria-expanded", String(showHelp));
     guide.hidden = !showHelp;
     list.hidden = showHelp;
-    footer.hidden = showHelp;
     input.setAttribute("aria-expanded", String(!showHelp));
     input.setAttribute(
       "aria-describedby",
@@ -91,8 +92,16 @@ if (dialog) {
   function open() {
     previousFocus = document.activeElement;
     input.value = "";
+    helpOpen = false;
     dialog.showModal();
     input.setAttribute("aria-expanded", "true");
+    render();
+    input.focus();
+  }
+
+  function hideHelp() {
+    helpOpen = false;
+    if (input.value.trim() === "?") input.value = "";
     render();
     input.focus();
   }
@@ -115,14 +124,31 @@ if (dialog) {
   });
 
   closeButton.addEventListener("click", close);
+  helpButton.addEventListener("click", () => {
+    if (!guide.hidden) hideHelp();
+    else {
+      helpOpen = true;
+      render();
+      input.focus();
+    }
+  });
+  dialog.addEventListener("cancel", (event) => {
+    if (!guide.hidden) {
+      event.preventDefault();
+      hideHelp();
+    }
+  });
   dialog.addEventListener("keydown", (event) => {
     if (event.key !== "Tab") return;
-    if (!event.shiftKey && document.activeElement === closeButton) {
+    const controls = Array.from(
+      dialog.querySelectorAll("input, button:not([hidden])"),
+    );
+    if (!event.shiftKey && document.activeElement === controls.at(-1)) {
       event.preventDefault();
-      input.focus();
-    } else if (event.shiftKey && document.activeElement === input) {
+      controls[0].focus();
+    } else if (event.shiftKey && document.activeElement === controls[0]) {
       event.preventDefault();
-      closeButton.focus();
+      controls.at(-1).focus();
     }
   });
   dialog.addEventListener("close", () => {
