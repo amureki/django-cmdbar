@@ -1,4 +1,4 @@
-export function parseQuery(raw, models = []) {
+function parseQuery(raw, models) {
   const query = raw.trim();
   const match = /^(\S+?)(?:\s*#([\s\S]*)|\s+([\s\S]*))?$/.exec(query);
   if (!match) return { head: "", action: "list", value: "" };

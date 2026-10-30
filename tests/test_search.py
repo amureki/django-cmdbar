@@ -63,27 +63,37 @@ def search(search_page, catalog):
 
 
 @pytest.mark.parametrize(
-    ("query", "expected"),
+    ("query", "url", "detail"),
     [
-        ("", {"head": "", "action": "list", "value": ""}),
-        (" arti ", {"head": "arti", "action": "list", "value": ""}),
-        ("arti#42", {"head": "arti", "action": "change", "value": "42"}),
-        ("arti #42", {"head": "arti", "action": "change", "value": "42"}),
-        ("arti# 42 ", {"head": "arti", "action": "change", "value": "42"}),
-        ("arti#", {"head": "arti", "action": "change", "value": ""}),
-        ("arti #", {"head": "arti", "action": "change", "value": ""}),
-        ("arti# ", {"head": "arti", "action": "change", "value": ""}),
-        ("arti alice", {"head": "arti", "action": "search", "value": "alice"}),
-        ("arti\talice smith", {"head": "arti", "action": "search", "value": "alice smith"}),
-        ("arti alice#42", {"head": "arti", "action": "search", "value": "alice#42"}),
-        ("arti 42", {"head": "arti", "action": "search", "value": "42"}),
-        ("arti +", {"head": "arti", "action": "add", "value": ""}),
-        ("tests.Article#42", {"head": "tests.Article", "action": "change", "value": "42"}),
+        (" arti ", "/admin/tests/article/", ""),
+        ("arti#42", "/admin/tests/article/42/change/", "Open record #42"),
+        ("arti #42", "/admin/tests/article/42/change/", "Open record #42"),
+        ("arti# 42 ", "/admin/tests/article/42/change/", "Open record #42"),
+        ("arti#", None, "Enter a record ID"),
+        ("arti #", None, "Enter a record ID"),
+        ("arti# ", None, "Enter a record ID"),
+        ("arti alice", "/admin/tests/article/?q=alice", "Search for alice"),
+        ("arti\talice smith", "/admin/tests/article/?q=alice+smith", "Search for alice smith"),
+        ("arti alice#42", "/admin/tests/article/?q=alice%2342", "Search for alice#42"),
+        ("arti 42", "/admin/tests/article/?q=42", "Search for 42"),
+        ("arti +", "/admin/tests/article/add/", "Add article"),
+        ("tests.Article#42", "/admin/tests/article/42/change/", "Open record #42"),
     ],
 )
-async def test_query_syntax(search_page, query, expected):
-    result = await search_page.evaluate("query => searchModule.parseQuery(query)", query)
-    assert result == expected
+async def test_query_syntax(search, query, url, detail):
+    results = await search(query)
+    assert [(result["key"], result["url"], result["detail"]) for result in results] == [
+        ("tests.article", url, detail)
+    ]
+
+
+@pytest.mark.parametrize("query", ["", " \t "])
+async def test_empty_query_lists_models(search, query):
+    results = await search(query)
+    assert [(result["key"], result["url"], result["detail"]) for result in results] == [
+        ("tests.article", "/admin/tests/article/", ""),
+        ("tests.department", "/admin/tests/department/", ""),
+    ]
 
 
 @pytest.mark.parametrize("query", ["arti", "ARTI", "ace", "tests.article", "árti"])
