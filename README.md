@@ -1,7 +1,7 @@
 # Django CmdBar
 
 [![Build](https://img.shields.io/github/actions/workflow/status/amureki/django-cmdbar/tests.yml?branch=main)](https://github.com/amureki/django-cmdbar/actions/workflows/tests.yml)
-[![Latest PyPI version](https://img.shields.io/pypi/v/django-cmdbar.svg)](https://pypi.org/project/django-cmdbar/)
+[![Latest PyPI version](https://img.shields.io/pypi/v/django-cmdbar)](https://pypi.org/project/django-cmdbar/)
 
 A navigation palette for Django admin. Press Cmd+K or Ctrl+K to find models,
 search records, or jump to a record by primary key.
