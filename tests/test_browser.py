@@ -1,3 +1,4 @@
+import asyncio
 import mimetypes
 import re
 from urllib.parse import urlsplit
@@ -12,6 +13,25 @@ from playwright.async_api import expect
 from .models import Article
 
 pytestmark = pytest.mark.django_db(transaction=True)
+
+
+async def toggle_palette(page):
+    # Page load does not wait for the module's top-level dynamic import.
+    await page.locator('script[type="module"][src*="/djangonaut/palette."]').evaluate(
+        "script => import(script.src)"
+    )
+    await page.keyboard.press("Control+k")
+
+
+async def test_shortcut_waits_for_delayed_search_module(admin_page):
+    async def delayed_search(route):
+        await asyncio.sleep(0.2)
+        await route.fallback()
+
+    await admin_page.context.route("**/search.js", delayed_search)
+    await admin_page.reload()
+    await toggle_palette(admin_page)
+    await expect(admin_page.get_by_role("combobox")).to_be_visible(timeout=1000)
 
 
 @pytest.mark.parametrize(
@@ -33,7 +53,7 @@ async def test_record_links_use_django_admin_quoting(admin_page, pk):
 async def test_keyboard_navigation_and_focus_restore(admin_page):
     previous = admin_page.get_by_role("link", name="View site")
     await previous.focus()
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     dialog = admin_page.get_by_role("dialog", name="Go to")
     query = admin_page.get_by_role("combobox")
     await expect(dialog).to_be_visible()
@@ -63,7 +83,7 @@ async def test_keyboard_navigation_and_focus_restore(admin_page):
 async def test_empty_results_and_reopening_are_safe(admin_page):
     errors = []
     admin_page.on("pageerror", lambda error: errors.append(str(error)))
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("zzzzzz")
     await expect(admin_page.get_by_role("status")).to_have_text("No matches. Try a model name.")
@@ -71,17 +91,17 @@ async def test_empty_results_and_reopening_are_safe(admin_page):
     for key in ("ArrowDown", "ArrowUp", "Enter"):
         await query.press(key)
     await expect(admin_page).to_have_url("http://testserver/admin/")
-    await admin_page.keyboard.press("Control+k")
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
+    await toggle_palette(admin_page)
     await expect(query).to_have_value("")
     await expect(admin_page.get_by_role("option").first).to_have_attribute("aria-selected", "true")
     assert errors == []
 
 
 async def test_typing_does_not_make_search_requests(admin_page):
+    await toggle_palette(admin_page)
     requests = []
     admin_page.on("request", lambda request: requests.append(request.url))
-    await admin_page.keyboard.press("Control+k")
     await admin_page.get_by_role("combobox").fill("arti alice")
     await expect(admin_page.get_by_role("option")).to_contain_text("Search for alice")
     assert requests == []
@@ -90,7 +110,7 @@ async def test_typing_does_not_make_search_requests(admin_page):
 async def test_enter_opens_filtered_changelist(admin_page):
     await Article.objects.acreate(id="42", name="Alice")
     await Article.objects.acreate(id="43", name="Bob")
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("arti Alice")
     await query.press("Enter")
@@ -101,7 +121,7 @@ async def test_enter_opens_filtered_changelist(admin_page):
 
 async def test_enter_opens_record(admin_page):
     await Article.objects.acreate(id="42", name="Alice")
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("arti#42")
     await query.press("Enter")
@@ -112,7 +132,7 @@ async def test_enter_opens_record(admin_page):
 async def test_incomplete_record_query_keeps_model_completions(admin_page):
     query_text = "arti#"
     await Article.objects.acreate(id="42", name="Alice")
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill(query_text)
     option = admin_page.get_by_role("option")
@@ -138,14 +158,14 @@ async def test_incomplete_record_query_keeps_model_completions(admin_page):
 
 
 async def test_click_opens_model_list(admin_page):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     await admin_page.get_by_role("combobox").fill("arti")
     await admin_page.get_by_role("option").click()
     await expect(admin_page).to_have_url("http://testserver/admin/tests/article/")
 
 
 async def test_modified_enter_opens_new_tab(admin_page):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("arti")
     async with admin_page.context.expect_page() as opened:
@@ -159,7 +179,7 @@ async def test_modified_enter_opens_new_tab(admin_page):
 
 async def test_custom_site_navigation_stays_on_that_site(admin_page):
     await admin_page.goto("http://testserver/backoffice/")
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("arti")
     await query.press("Enter")
@@ -167,23 +187,23 @@ async def test_custom_site_navigation_stays_on_that_site(admin_page):
 
 
 async def test_search_terms_are_rendered_as_text(admin_page):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     await admin_page.get_by_role("combobox").fill('arti <img src=x onerror="alert(1)">')
     await expect(admin_page.get_by_role("option")).to_contain_text('<img src=x onerror="alert(1)">')
     await expect(admin_page.locator("#djangonaut img")).to_have_count(0)
 
 
 async def test_close_button_and_backdrop(admin_page):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     await admin_page.get_by_role("button", name="Close navigation").click()
     await expect(admin_page.get_by_role("dialog")).not_to_be_visible()
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     await admin_page.mouse.click(2, 2)
     await expect(admin_page.get_by_role("dialog")).not_to_be_visible()
 
 
 async def test_query_help_and_return_to_search(admin_page):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     guide = admin_page.get_by_role("region", name="Query help")
     await expect(guide).not_to_be_visible()
@@ -212,7 +232,7 @@ async def test_query_help_and_return_to_search(admin_page):
 async def test_mobile_layout_and_admin_theme(admin_page, theme):
     await admin_page.set_viewport_size({"width": 390, "height": 844})
     await admin_page.evaluate("theme => document.documentElement.dataset.theme = theme", theme)
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     await admin_page.get_by_role("combobox").fill("arti " + "long name " * 30)
     box = await admin_page.get_by_role("dialog").bounding_box()
     assert box["x"] >= 0
@@ -254,7 +274,7 @@ async def test_manifest_static_assets_without_unhashed_files(admin_page, setting
 
     await admin_page.context.route("http://testserver/static/**", static_response)
     await admin_page.goto("http://testserver/admin/")
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("arti#42")
     await expect(admin_page.get_by_role("option")).to_contain_text("Open record #42")
@@ -265,7 +285,7 @@ async def test_manifest_static_assets_without_unhashed_files(admin_page, setting
     [("arti", "/admin/tests/article/"), ("arti +", "/admin/tests/article/add/")],
 )
 async def test_single_enter_opens_destination(admin_page, query_text, destination):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill(query_text)
     await query.press("Enter")
@@ -285,7 +305,7 @@ async def test_multiword_model_actions(admin_page, monkeypatch, suffix, destinat
     monkeypatch.setattr(Article._meta, "verbose_name_plural", "Article groups")
     await Article.objects.acreate(id="42", name="Alice")
     await admin_page.reload()
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("Article groups" + suffix)
     await query.press("Enter")
@@ -293,7 +313,7 @@ async def test_multiword_model_actions(admin_page, monkeypatch, suffix, destinat
 
 
 async def test_help_button_preserves_query(admin_page):
-    await admin_page.keyboard.press("Control+k")
+    await toggle_palette(admin_page)
     query = admin_page.get_by_role("combobox")
     await query.fill("arti Alice")
     await admin_page.get_by_role("button", name="Query help").click()
