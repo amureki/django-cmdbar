@@ -5,25 +5,22 @@ build-backend = "hatchling.build"
 [project]
 name = "djangonaut"
 version = "0.0.1"
-description = "A Raycast-style command palette for Django admin."
+description = "Keyboard navigation for Django admin models and records."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Rustem Saiargaliev" }]
 classifiers = [
     "Framework :: Django",
-    "Framework :: Django :: 5.2",
-    "Framework :: Django :: 6.0",
+    "Framework :: Django :: 6.1",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "License :: OSI Approved :: MIT License",
 ]
-dependencies = ["Django>=5.2"]
+dependencies = ["Django>=6.1,<6.2"]
 
 [project.urls]
 Homepage = "https://github.com/amureki/djangonaut"
@@ -32,15 +29,28 @@ Homepage = "https://github.com/amureki/djangonaut"
 packages = ["src/djangonaut"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/djangonaut", "README.md", "pyproject.toml", "LICENSE"]
+include = ["src/djangonaut", "tests", "README.md", "pyproject.toml", "LICENSE"]
 
 [dependency-groups]
 dev = [
     "pytest",
     "pytest-django",
+    "pytest-playwright-asyncio",
+    "ruff",
 ]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
 python_files = ["test_*.py"]
 pythonpath = ["src", "."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+filterwarnings = ["error"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

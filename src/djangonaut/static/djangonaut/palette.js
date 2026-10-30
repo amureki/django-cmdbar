@@ -1,173 +1,153 @@
-(function () {
-  "use strict";
+const dialog = document.getElementById("djangonaut");
 
-  const script = document.currentScript;
-  const endpoint = script?.dataset.endpoint || "/djangonaut/commands/";
-
-  const host = document.createElement("djangonaut-palette");
-  host.setAttribute("data-open", "false");
-  const root = host.attachShadow({ mode: "open" });
-
-  root.innerHTML = `
-    <style>
-      :host {
-        all: initial;
-        position: fixed; inset: 0;
-        z-index: 2147483000;
-        pointer-events: none;
-      }
-      :host([data-open="true"]) { pointer-events: auto; }
-      .backdrop {
-        position: fixed; inset: 0;
-        background: rgba(15, 15, 20, 0.45);
-        backdrop-filter: blur(2px);
-        display: none;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-      :host([data-open="true"]) .backdrop { display: block; }
-      .panel {
-        position: absolute;
-        top: 15vh; left: 50%; transform: translateX(-50%);
-        width: min(640px, 92vw);
-        background: #fff; color: #111;
-        border-radius: 12px;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.35);
-        overflow: hidden;
-      }
-      input {
-        width: 100%; box-sizing: border-box;
-        padding: 16px 18px; border: 0;
-        font-size: 16px; outline: none;
-        border-bottom: 1px solid #eee;
-      }
-      ul { list-style: none; margin: 0; padding: 6px 0; max-height: 50vh; overflow-y: auto; }
-      li {
-        padding: 10px 18px;
-        display: flex; align-items: center; gap: 10px;
-        cursor: pointer;
-      }
-      li[aria-selected="true"] { background: #f2f4ff; }
-      .label { font-weight: 500; }
-      .hint { color: #777; font-size: 12px; margin-left: auto; }
-      .empty { padding: 18px; color: #888; font-size: 13px; }
-      @media (prefers-color-scheme: dark) {
-        .panel { background: #1e1e22; color: #eee; }
-        input { background: #1e1e22; color: #eee; border-bottom-color: #333; }
-        li[aria-selected="true"] { background: #2a2b33; }
-        .hint { color: #999; }
-      }
-    </style>
-    <div class="backdrop">
-      <div class="panel" role="dialog" aria-label="Djangonaut palette">
-        <input type="text" placeholder="Jump to… (model, model rick, model #42, model +, @app)" autocomplete="off" />
-        <ul role="listbox"></ul>
-        <div class="empty" hidden>No matches.</div>
-      </div>
-    </div>
-  `;
-
-  const backdrop = root.querySelector(".backdrop");
-  const input = root.querySelector("input");
-  const list = root.querySelector("ul");
-  const empty = root.querySelector(".empty");
-
+if (dialog) {
+  const { getResults } = await import(dialog.dataset.searchUrl);
+  const catalog = JSON.parse(
+    document.getElementById("djangonaut-data").textContent,
+  );
+  const input = dialog.querySelector("input");
+  const closeButton = dialog.querySelector("button");
+  const list = dialog.querySelector("ul");
+  const empty = dialog.querySelector(".djangonaut-empty");
+  const guide = dialog.querySelector("#djangonaut-guide");
+  const footer = dialog.querySelector("footer");
   let results = [];
   let selected = 0;
-  let fetchTimer = null;
-  let lastToken = 0;
+  let previousFocus;
 
-  function open() {
-    host.setAttribute("data-open", "true");
-    input.value = "";
-    results = [];
-    render();
-    input.focus();
-    refresh("");
-  }
-
-  function close() {
-    host.setAttribute("data-open", "false");
-  }
-
-  function isOpen() {
-    return host.getAttribute("data-open") === "true";
+  function select(index) {
+    selected = index;
+    for (const [i, option] of Array.from(list.children).entries()) {
+      option.setAttribute("aria-selected", String(i === selected));
+    }
+    const option = list.children[selected];
+    if (option) {
+      input.setAttribute("aria-activedescendant", option.id);
+      option.scrollIntoView({ block: "nearest" });
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
   }
 
   function render() {
-    list.innerHTML = "";
-    if (!results.length) {
-      empty.hidden = false;
-      return;
-    }
-    empty.hidden = true;
-    results.forEach((r, i) => {
-      const li = document.createElement("li");
-      li.setAttribute("role", "option");
-      li.setAttribute("aria-selected", i === selected ? "true" : "false");
-      li.innerHTML = `<span class="label"></span><span class="hint"></span>`;
-      li.querySelector(".label").textContent = r.label;
-      li.querySelector(".hint").textContent = r.hint || "";
-      li.addEventListener("click", (e) => choose(i, e.metaKey || e.ctrlKey));
-      list.appendChild(li);
+    const showHelp = input.value.trim() === "?";
+    guide.hidden = !showHelp;
+    list.hidden = showHelp;
+    footer.hidden = showHelp;
+    input.setAttribute("aria-expanded", String(!showHelp));
+    input.setAttribute(
+      "aria-describedby",
+      showHelp ? "djangonaut-guide" : "djangonaut-help",
+    );
+    results = showHelp ? [] : getResults(input.value, catalog);
+    list.replaceChildren();
+    empty.hidden = showHelp || results.length > 0;
+    results.forEach((result, index) => {
+      const option = document.createElement("li");
+      option.id = `djangonaut-option-${index}`;
+      option.setAttribute("role", "option");
+      option.setAttribute("aria-disabled", String(!result.url));
+      const label = document.createElement("span");
+      label.className = "djangonaut-name";
+      label.textContent = result.label;
+      const app = document.createElement("span");
+      app.className = "djangonaut-app";
+      app.textContent = result.key;
+      option.append(label, app);
+      if (result.detail) {
+        const detail = document.createElement("span");
+        detail.className = "djangonaut-detail";
+        detail.textContent = result.detail;
+        option.append(detail);
+      }
+      option.addEventListener("pointermove", () => select(index));
+      option.addEventListener("click", (event) =>
+        choose(index, event.metaKey || event.ctrlKey),
+      );
+      list.append(option);
     });
+    select(0);
   }
 
-  function choose(i, newTab) {
-    const r = results[i];
-    if (!r) return;
+  function close() {
+    dialog.close();
+  }
+
+  function choose(index, newTab) {
+    const result = results[index];
+    if (!result) return;
+    if (!result.url) {
+      input.focus();
+      return;
+    }
     if (newTab) {
-      window.open(r.url, "_blank");
+      window.open(result.url, "_blank", "noopener");
     } else {
-      window.location.href = r.url;
+      window.location.assign(result.url);
     }
     close();
   }
 
-  function refresh(q) {
-    clearTimeout(fetchTimer);
-    fetchTimer = setTimeout(() => {
-      const token = ++lastToken;
-      const url = endpoint + "?q=" + encodeURIComponent(q);
-      fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } })
-        .then((r) => (r.ok ? r.json() : { results: [] }))
-        .then((data) => {
-          if (token !== lastToken) return;
-          results = data.results || [];
-          selected = 0;
-          render();
-        })
-        .catch(() => {});
-    }, 80);
+  function open() {
+    previousFocus = document.activeElement;
+    input.value = "";
+    dialog.showModal();
+    input.setAttribute("aria-expanded", "true");
+    render();
+    input.focus();
   }
 
-  input.addEventListener("input", () => refresh(input.value));
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { close(); return; }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      if (results.length) { selected = (selected + 1) % results.length; render(); }
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      if (results.length) { selected = (selected - 1 + results.length) % results.length; render(); }
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      choose(selected, e.metaKey || e.ctrlKey);
+  input.addEventListener("input", render);
+  input.addEventListener("keydown", (event) => {
+    if (event.isComposing) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (results.length) {
+        select(
+          (selected + (event.key === "ArrowDown" ? 1 : -1) + results.length) %
+            results.length,
+        );
+      }
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      choose(selected, event.metaKey || event.ctrlKey);
     }
   });
 
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) close();
-  });
-
-  window.addEventListener("keydown", (e) => {
-    const mod = e.metaKey || e.ctrlKey;
-    if (mod && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      isOpen() ? close() : open();
+  closeButton.addEventListener("click", close);
+  dialog.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    if (!event.shiftKey && document.activeElement === closeButton) {
+      event.preventDefault();
+      input.focus();
+    } else if (event.shiftKey && document.activeElement === input) {
+      event.preventDefault();
+      closeButton.focus();
     }
   });
-
-  function mount() { document.body.appendChild(host); }
-  if (document.body) mount();
-  else document.addEventListener("DOMContentLoaded", mount);
-})();
+  dialog.addEventListener("close", () => {
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    if (previousFocus?.isConnected) previousFocus.focus();
+  });
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    ) {
+      close();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.isComposing || event.repeat || event.altKey || event.shiftKey)
+      return;
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      dialog.open ? close() : open();
+    }
+  });
+}

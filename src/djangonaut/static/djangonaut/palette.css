@@ -1,0 +1,201 @@
+#djangonaut {
+  box-sizing: border-box;
+  inset-block-start: min(16vh, 8rem);
+  margin-block: 0;
+  inline-size: min(36rem, calc(100% - 2rem));
+  max-block-size: calc(100dvh - min(16vh, 8rem) - 1rem);
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--body-bg);
+  color: var(--body-fg);
+  font-family: var(--font-family-primary);
+  overflow: auto;
+}
+
+#djangonaut::backdrop {
+  background: rgb(0 0 0 / 20%);
+}
+
+#djangonaut .djangonaut-search {
+  display: flex;
+  align-items: center;
+  border-block-end: 1px solid var(--hairline-color);
+}
+
+#djangonaut .djangonaut-search:focus-within {
+  border-block-end-color: var(--link-fg);
+}
+
+#djangonaut input {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  inline-size: 100%;
+  margin: 0;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  color: var(--body-fg);
+  caret-color: var(--body-fg);
+  font: inherit;
+  font-size: 1rem;
+}
+
+#djangonaut input::placeholder {
+  color: var(--body-quiet-color);
+  opacity: 1;
+}
+
+#djangonaut .djangonaut-close {
+  flex-shrink: 0;
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  margin-inline-end: 0.5rem;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--body-quiet-color);
+  cursor: pointer;
+}
+
+#djangonaut .djangonaut-close:hover {
+  background: var(--darkened-bg);
+  color: var(--body-fg);
+}
+
+#djangonaut button:focus-visible {
+  outline: 2px solid var(--link-fg);
+  outline-offset: -2px;
+}
+
+#djangonaut-results {
+  max-block-size: 45dvh;
+  margin: 0;
+  padding: 0.375rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--body-quiet-color) var(--body-bg);
+}
+
+#djangonaut-results li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  padding: 0.625rem;
+  border-radius: 4px;
+  list-style: none;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+#djangonaut-results li[aria-selected="true"] {
+  background: var(--darkened-bg);
+}
+
+#djangonaut .djangonaut-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+#djangonaut .djangonaut-app {
+  overflow: hidden;
+  color: var(--body-quiet-color);
+  font-size: 0.75rem;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#djangonaut .djangonaut-detail {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: var(--body-quiet-color);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#djangonaut .djangonaut-empty {
+  margin: 0;
+  padding: 1.25rem 1rem;
+  color: var(--body-quiet-color);
+  font-size: 0.875rem;
+}
+
+#djangonaut footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.625rem 1rem;
+  border-block-start: 1px solid var(--hairline-color);
+  color: var(--body-quiet-color);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+#djangonaut kbd {
+  font: inherit;
+}
+
+#djangonaut [hidden] {
+  display: none;
+}
+
+#djangonaut-guide {
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+#djangonaut-guide dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+}
+
+#djangonaut-guide :is(dt, dd) {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+#djangonaut-guide code {
+  color: var(--body-fg);
+  font-size: inherit;
+}
+
+#djangonaut-guide p {
+  margin: 1rem 0 0;
+  color: var(--body-quiet-color);
+  font-size: 0.8125rem;
+}
+
+#djangonaut .djangonaut-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#djangonaut ::selection {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+
+@media (forced-colors: active) {
+  #djangonaut-results li[aria-selected="true"] {
+    outline: 1px solid Highlight;
+    outline-offset: -1px;
+  }
+}

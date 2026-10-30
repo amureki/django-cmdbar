@@ -1,0 +1,31 @@
+{% load static i18n %}
+{% if palette %}
+  {{ palette|json_script:"djangonaut-data" }}
+  <dialog id="djangonaut" aria-labelledby="djangonaut-label" data-search-url="{% static 'djangonaut/search.js' %}">
+    <div class="djangonaut-search">
+      <label id="djangonaut-label" class="djangonaut-sr-only" for="djangonaut-query">{% translate "Go to" %}</label>
+      <input id="djangonaut-query" type="text" role="combobox" aria-expanded="false"
+             aria-controls="djangonaut-results" aria-autocomplete="list" aria-describedby="djangonaut-help"
+             placeholder="{% translate 'Search models…' %}"
+             autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+      <button type="button" class="djangonaut-close" aria-label="{% translate 'Close navigation' %}"><kbd>Esc</kbd></button>
+    </div>
+    <ul id="djangonaut-results" role="listbox" aria-label="{% translate 'Destinations' %}"></ul>
+    <section id="djangonaut-guide" role="region" aria-label="{% translate 'Query help' %}" hidden>
+      <dl>
+        <dt><code>model</code></dt><dd>{% translate "Open a model list" %}</dd>
+        <dt><code>model#id</code></dt><dd>{% translate "Open a record" %}</dd>
+        <dt><code>model text</code></dt><dd>{% translate "Search within a model" %}</dd>
+        <dt><code>model +</code></dt><dd>{% translate "Add a record" %}</dd>
+      </dl>
+      <p>{% translate "Ctrl/Command + Enter opens a new tab." %}</p>
+    </section>
+    <p class="djangonaut-empty" role="status" hidden>{% translate "No matches. Try a model name." %}</p>
+    <p id="djangonaut-help" class="djangonaut-sr-only">{% translate "Type a model name, add # and a record ID, or add a space and a search term. Use arrow keys to select and Enter to open. Ctrl/Command + Enter opens a new tab." %}</p>
+    <footer aria-hidden="true">
+      <span><kbd>↑ ↓</kbd> {% translate "Select" %}</span>
+      <span><kbd>Enter</kbd> {% translate "Open" %}</span>
+    </footer>
+  </dialog>
+  <script type="module" src="{% static 'djangonaut/palette.js' %}"></script>
+{% endif %}
