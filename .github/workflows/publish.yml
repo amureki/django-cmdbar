@@ -1,0 +1,77 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+      - name: Check release version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          uv run --no-project python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+          tag = os.environ["RELEASE_TAG"]
+          if tag != f"v{version}":
+              raise SystemExit(f"Release tag {tag!r} must match v{version}")
+          PY
+      - run: uv build
+      - run: uv run --no-project --with twine twine check --strict dist/*
+      - name: Check installed wheel assets
+        run: |
+          uv run --no-project --with ./dist/*.whl python - <<'PY'
+          from importlib.resources import files
+
+          package = files("djangonaut")
+          for path in (
+              "templates/admin/base_site.html",
+              "templates/djangonaut/palette.html",
+              "static/djangonaut/palette.css",
+              "static/djangonaut/palette.js",
+              "static/djangonaut/search.js",
+          ):
+              if not package.joinpath(path).is_file():
+                  raise SystemExit(f"Wheel is missing {path}")
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: distributions
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/djangonaut/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: distributions
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
