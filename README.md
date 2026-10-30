@@ -11,6 +11,21 @@ Supports maintained [Python](https://devguide.python.org/versions/) and
 Uses plain JavaScript and CSS, with no frontend dependencies, build step,
 middleware, or additional URLs.
 
+**Search records:** `user alice` opens the Users list filtered by “alice”.
+
+![Djangonaut showing the query user alice and the result Search for alice.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-search.png)
+
+**Jump to a record:** `user#42` opens the user with primary key 42.
+
+![Djangonaut showing the query user#42 and the result Open record #42.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-record.png)
+
+<details>
+<summary>Built-in query guide</summary>
+
+![Djangonaut's query guide showing commands to open model lists, find records, search, and add records.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut.png)
+
+</details>
+
 ## Install
 
 **Install the package, add one app, and you're ready.**
