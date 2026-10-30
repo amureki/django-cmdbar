@@ -17,7 +17,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 async def toggle_palette(page):
     # Page load does not wait for the module's top-level dynamic import.
-    await page.locator('script[type="module"][src*="/djangonaut/palette."]').evaluate(
+    await page.locator('script[type="module"][src*="/django_cmdbar/palette."]').evaluate(
         "script => import(script.src)"
     )
     await page.keyboard.press("Control+k")
@@ -41,8 +41,8 @@ async def test_record_links_use_django_admin_quoting(admin_page, pk):
     expected = reverse("admin:tests_article_change", args=[quote(pk)])
     results = await admin_page.evaluate(
         """async query => {
-            const { getResults } = await import('/static/djangonaut/search.js');
-            const catalog = JSON.parse(document.getElementById('djangonaut-data').textContent);
+            const { getResults } = await import('/static/django_cmdbar/search.js');
+            const catalog = JSON.parse(document.getElementById('django_cmdbar-data').textContent);
             return getResults(query, catalog);
         }""",
         f"arti#{pk}",
@@ -190,7 +190,7 @@ async def test_search_terms_are_rendered_as_text(admin_page):
     await toggle_palette(admin_page)
     await admin_page.get_by_role("combobox").fill('arti <img src=x onerror="alert(1)">')
     await expect(admin_page.get_by_role("option")).to_contain_text('<img src=x onerror="alert(1)">')
-    await expect(admin_page.locator("#djangonaut img")).to_have_count(0)
+    await expect(admin_page.locator("#django_cmdbar img")).to_have_count(0)
 
 
 async def test_close_button_and_backdrop(admin_page):
@@ -238,17 +238,17 @@ async def test_mobile_layout_and_admin_theme(admin_page, theme):
     assert box["x"] >= 0
     assert box["x"] + box["width"] <= 390
     assert box["y"] + box["height"] <= 844
-    assert await admin_page.locator("#djangonaut").evaluate(
+    assert await admin_page.locator("#django_cmdbar").evaluate(
         "el => el.scrollWidth <= el.clientWidth"
     )
-    assert await admin_page.locator("#djangonaut").evaluate(
+    assert await admin_page.locator("#django_cmdbar").evaluate(
         "el => getComputedStyle(el).backgroundColor === "
         "getComputedStyle(document.body).backgroundColor"
     )
 
     await admin_page.get_by_role("combobox").fill("?")
     await expect(admin_page.get_by_role("region", name="Query help")).to_be_visible()
-    assert await admin_page.locator("#djangonaut").evaluate(
+    assert await admin_page.locator("#django_cmdbar").evaluate(
         "el => el.scrollWidth <= el.clientWidth"
     )
 
@@ -262,7 +262,7 @@ async def test_manifest_static_assets_without_unhashed_files(admin_page, setting
     }
     await sync_to_async(call_command)("collectstatic", interactive=False, verbosity=0)
     for name in ("palette.js", "search.js", "palette.css"):
-        (tmp_path / "djangonaut" / name).unlink()
+        (tmp_path / "django_cmdbar" / name).unlink()
 
     async def static_response(route):
         name = urlsplit(route.request.url).path.removeprefix("/static/")

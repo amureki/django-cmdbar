@@ -44,13 +44,13 @@ jobs:
           uv run --no-project --with ./dist/*.whl python - <<'PY'
           from importlib.resources import files
 
-          package = files("djangonaut")
+          package = files("django_cmdbar")
           for path in (
               "templates/admin/base_site.html",
-              "templates/djangonaut/palette.html",
-              "static/djangonaut/palette.css",
-              "static/djangonaut/palette.js",
-              "static/djangonaut/search.js",
+              "templates/django_cmdbar/palette.html",
+              "static/django_cmdbar/palette.css",
+              "static/django_cmdbar/palette.js",
+              "static/django_cmdbar/search.js",
           ):
               if not package.joinpath(path).is_file():
                   raise SystemExit(f"Wheel is missing {path}")
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/project/djangonaut/
+      url: https://pypi.org/project/django-cmdbar/
     permissions:
       id-token: write
     steps:

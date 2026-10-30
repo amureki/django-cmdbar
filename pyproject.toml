@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "djangonaut"
+name = "django-cmdbar"
 version = "0.0.1"
 description = "Keyboard navigation for Django admin models and records."
 readme = "README.md"
@@ -28,13 +28,13 @@ classifiers = [
 dependencies = ["Django>=5.2"]
 
 [project.urls]
-Homepage = "https://github.com/amureki/djangonaut"
+Homepage = "https://github.com/amureki/django-cmdbar"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/djangonaut"]
+packages = ["src/django_cmdbar"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/djangonaut", "tests", "README.md", "pyproject.toml", "LICENSE"]
+include = ["src/django_cmdbar", "tests", "README.md", "pyproject.toml", "LICENSE"]
 
 [dependency-groups]
 dev = [

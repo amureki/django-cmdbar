@@ -1,4 +1,4 @@
-#djangonaut {
+#django_cmdbar {
   box-sizing: border-box;
   inset-block-start: min(16vh, 8rem);
   margin-block: 0;
@@ -13,21 +13,21 @@
   overflow: auto;
 }
 
-#djangonaut::backdrop {
+#django_cmdbar::backdrop {
   background: rgb(0 0 0 / 20%);
 }
 
-#djangonaut .djangonaut-search {
+#django_cmdbar .django_cmdbar-search {
   display: flex;
   align-items: center;
   border-block-end: 1px solid var(--hairline-color);
 }
 
-#djangonaut .djangonaut-search:focus-within {
+#django_cmdbar .django_cmdbar-search:focus-within {
   border-block-end-color: var(--link-fg);
 }
 
-#djangonaut input {
+#django_cmdbar input {
   box-sizing: border-box;
   min-inline-size: 0;
   inline-size: 100%;
@@ -43,12 +43,12 @@
   font-size: 1rem;
 }
 
-#djangonaut input::placeholder {
+#django_cmdbar input::placeholder {
   color: var(--body-quiet-color);
   opacity: 1;
 }
 
-#djangonaut .djangonaut-search button {
+#django_cmdbar .django_cmdbar-search button {
   flex-shrink: 0;
   min-block-size: 2.75rem;
   min-inline-size: 2.75rem;
@@ -63,17 +63,17 @@
   font-size: 0.75rem;
 }
 
-#djangonaut .djangonaut-search button:hover {
+#django_cmdbar .django_cmdbar-search button:hover {
   background: var(--darkened-bg);
   color: var(--body-fg);
 }
 
-#djangonaut button:focus-visible {
+#django_cmdbar button:focus-visible {
   outline: 2px solid var(--link-fg);
   outline-offset: -2px;
 }
 
-#djangonaut-results {
+#django_cmdbar-results {
   max-block-size: 45dvh;
   margin: 0;
   padding: 0.375rem;
@@ -82,7 +82,7 @@
   scrollbar-color: var(--body-quiet-color) var(--body-bg);
 }
 
-#djangonaut-results li {
+#django_cmdbar-results li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, auto);
   align-items: baseline;
@@ -94,17 +94,17 @@
   cursor: pointer;
 }
 
-#djangonaut-results li[aria-selected="true"] {
+#django_cmdbar-results li[aria-selected="true"] {
   background: var(--darkened-bg);
 }
 
-#djangonaut .djangonaut-name {
+#django_cmdbar .django_cmdbar-name {
   font-size: 0.875rem;
   font-weight: 500;
   overflow-wrap: anywhere;
 }
 
-#djangonaut .djangonaut-app {
+#django_cmdbar .django_cmdbar-app {
   overflow: hidden;
   color: var(--body-quiet-color);
   font-size: 0.75rem;
@@ -113,7 +113,7 @@
   white-space: nowrap;
 }
 
-#djangonaut .djangonaut-detail {
+#django_cmdbar .django_cmdbar-detail {
   grid-column: 1 / -1;
   overflow: hidden;
   color: var(--body-quiet-color);
@@ -122,52 +122,52 @@
   white-space: nowrap;
 }
 
-#djangonaut .djangonaut-empty {
+#django_cmdbar .django_cmdbar-empty {
   margin: 0;
   padding: 1.25rem 1rem;
   color: var(--body-quiet-color);
   font-size: 0.875rem;
 }
 
-#djangonaut kbd {
+#django_cmdbar kbd {
   font: inherit;
 }
 
-#djangonaut [hidden] {
+#django_cmdbar [hidden] {
   display: none;
 }
 
-#djangonaut-guide {
+#django_cmdbar-guide {
   padding: 1rem;
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-#djangonaut-guide dl {
+#django_cmdbar-guide dl {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 0.5rem 1.5rem;
   margin: 0;
 }
 
-#djangonaut-guide :is(dt, dd) {
+#django_cmdbar-guide :is(dt, dd) {
   margin: 0;
   padding: 0;
   font-weight: normal;
 }
 
-#djangonaut-guide code {
+#django_cmdbar-guide code {
   color: var(--body-fg);
   font-size: inherit;
 }
 
-#djangonaut-guide p {
+#django_cmdbar-guide p {
   margin: 1rem 0 0;
   color: var(--body-quiet-color);
   font-size: 0.8125rem;
 }
 
-#djangonaut .djangonaut-sr-only {
+#django_cmdbar .django_cmdbar-sr-only {
   position: absolute;
   inline-size: 1px;
   block-size: 1px;
@@ -179,13 +179,13 @@
   white-space: nowrap;
 }
 
-#djangonaut ::selection {
+#django_cmdbar ::selection {
   background: var(--primary);
   color: var(--primary-fg);
 }
 
 @media (forced-colors: active) {
-  #djangonaut-results li[aria-selected="true"] {
+  #django_cmdbar-results li[aria-selected="true"] {
     outline: 1px solid Highlight;
     outline-offset: -1px;
   }

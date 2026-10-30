@@ -7,11 +7,11 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext as _
 
 register = template.Library()
-PK_PLACEHOLDER = "__djangonaut_pk__"
+PK_PLACEHOLDER = "__django_cmdbar_pk__"
 
 
-@register.inclusion_tag("djangonaut/palette.html", takes_context=True)
-def djangonaut(context, site: AdminSite | None = None):
+@register.inclusion_tag("django_cmdbar/palette.html", takes_context=True)
+def django_cmdbar(context, site: AdminSite | None = None):
     request = getattr(context, "request", None)
     if request is None or context.get("is_popup"):
         return {}

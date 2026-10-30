@@ -7,7 +7,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "djangonaut",
+    "django_cmdbar",
     "django.contrib.admin",
     "django.contrib.staticfiles",
     "tests",
