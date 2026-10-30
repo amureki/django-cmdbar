@@ -1,5 +1,8 @@
 # Djangonaut
 
+[![Build](https://img.shields.io/github/actions/workflow/status/amureki/djangonaut/tests.yml?branch=main)](https://github.com/amureki/djangonaut/actions/workflows/tests.yml)
+[![Latest PyPI version](https://img.shields.io/pypi/v/djangonaut.svg)](https://pypi.org/project/djangonaut/)
+
 A navigation palette for Django admin. Press Cmd+K or Ctrl+K to find models,
 search records, or jump to a record by primary key.
 
@@ -10,12 +13,13 @@ middleware, or additional URLs.
 
 ## Install
 
+**Install the package, add one app, and you're ready.**
+
 ```sh
 uv pip install djangonaut
 ```
 
-Put `djangonaut` **before** `django.contrib.admin` in `INSTALLED_APPS` so Django
-loads its admin template extension:
+Add `djangonaut` **before** `django.contrib.admin` in `INSTALLED_APPS`:
 
 ```python
 INSTALLED_APPS = [
@@ -26,7 +30,8 @@ INSTALLED_APPS = [
 ]
 ```
 
-Keep the project's existing admin URL configuration.
+Open Django admin and press **Cmd+K** or **Ctrl+K**. That's it—no extra settings,
+URLs, middleware, or migrations to configure.
 
 ## Queries
 
