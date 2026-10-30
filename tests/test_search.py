@@ -6,7 +6,7 @@ import pytest
 
 @pytest.fixture
 async def search_page(page):
-    source = Path(__file__).parents[1] / "src/djangonaut/static/djangonaut/search.js"
+    source = Path(__file__).parents[1] / "src/django_cmdbar/static/django_cmdbar/search.js"
     await page.evaluate(
         "async url => { window.searchModule = await import(url); }",
         "data:text/javascript," + quote(source.read_text()),
@@ -24,7 +24,7 @@ def catalog():
                 "key": "tests.article",
                 "keywords": ["Article", "article"],
                 "list_url": "/admin/tests/article/",
-                "change_url": "/admin/tests/article/__djangonaut_pk__/change/",
+                "change_url": "/admin/tests/article/__django_cmdbar_pk__/change/",
                 "add_url": "/admin/tests/article/add/",
                 "searchable": True,
             },
@@ -34,12 +34,12 @@ def catalog():
                 "key": "tests.department",
                 "keywords": ["Department", "department"],
                 "list_url": "/admin/tests/department/",
-                "change_url": "/admin/tests/department/__djangonaut_pk__/change/",
+                "change_url": "/admin/tests/department/__django_cmdbar_pk__/change/",
                 "add_url": "/admin/tests/department/add/",
                 "searchable": False,
             },
         ],
-        "pk_placeholder": "__djangonaut_pk__",
+        "pk_placeholder": "__django_cmdbar_pk__",
         "quote_map": {},
         "labels": {
             "list": "",
@@ -211,7 +211,7 @@ async def test_longest_multiword_model_head(search, catalog, query, destination)
                 "key": f"content.{model}",
                 "keywords": [model],
                 "list_url": f"/admin/content/{model}/",
-                "change_url": f"/admin/content/{model}/__djangonaut_pk__/change/",
+                "change_url": f"/admin/content/{model}/__django_cmdbar_pk__/change/",
                 "add_url": f"/admin/content/{model}/add/",
             }
             for name, model in [("Article groups", "group"), ("Article groups archive", "archive")]

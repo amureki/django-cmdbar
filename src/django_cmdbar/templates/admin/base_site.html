@@ -1,14 +1,14 @@
 {% extends "admin/base_site.html" %}
-{% load static djangonaut %}
+{% load static django_cmdbar %}
 
 {% block extrastyle %}
   {{ block.super }}
   {% if has_permission and not is_popup %}
-    <link rel="stylesheet" href="{% static 'djangonaut/palette.css' %}">
+    <link rel="stylesheet" href="{% static 'django_cmdbar/palette.css' %}">
   {% endif %}
 {% endblock %}
 
 {% block extrabody %}
   {{ block.super }}
-  {% djangonaut %}
+  {% django_cmdbar %}
 {% endblock %}

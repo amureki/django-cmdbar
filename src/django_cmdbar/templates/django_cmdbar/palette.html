@@ -1,0 +1,29 @@
+{% load static i18n %}
+{% if palette %}
+  {{ palette|json_script:"django_cmdbar-data" }}
+  <dialog id="django_cmdbar" aria-labelledby="django_cmdbar-label" data-search-url="{% static 'django_cmdbar/search.js' %}">
+    <div class="django_cmdbar-search">
+      <label id="django_cmdbar-label" class="django_cmdbar-sr-only" for="django_cmdbar-query">{% translate "Go to" %}</label>
+      <input id="django_cmdbar-query" type="text" role="combobox" aria-expanded="false"
+             aria-controls="django_cmdbar-results" aria-autocomplete="list" aria-describedby="django_cmdbar-help"
+             placeholder="{% translate 'Search models…' %}"
+             autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+      <button type="button" class="django_cmdbar-help-button" aria-label="{% translate 'Query help' %}" aria-controls="django_cmdbar-guide" aria-expanded="false"><kbd>?</kbd></button>
+      <button type="button" class="django_cmdbar-close" aria-label="{% translate 'Close navigation' %}"><kbd>Esc</kbd></button>
+    </div>
+    <ul id="django_cmdbar-results" role="listbox" aria-label="{% translate 'Destinations' %}"></ul>
+    <section id="django_cmdbar-guide" role="region" aria-label="{% translate 'Query help' %}" hidden>
+      <dl>
+        <dt><code>model</code></dt><dd>{% translate "Open a model list" %}</dd>
+        <dt><code>model#id</code></dt><dd>{% translate "Open a record" %}</dd>
+        <dt><code>model text</code></dt><dd>{% translate "Search within a model" %}</dd>
+        <dt><code>model +</code></dt><dd>{% translate "Add a record" %}</dd>
+      </dl>
+      <p>{% translate "Use Up and Down to select and Enter to open. Escape closes the palette." %}</p>
+      <p>{% translate "Ctrl/Command + Enter opens a new tab." %}</p>
+    </section>
+    <p class="django_cmdbar-empty" role="status" hidden>{% translate "No matches. Try a model name." %}</p>
+    <p id="django_cmdbar-help" class="django_cmdbar-sr-only">{% translate "Type a model name, add # and a record ID, or add a space and a search term. Use Up and Down to select and Enter to open. Ctrl/Command + Enter opens a new tab." %}</p>
+  </dialog>
+  <script type="module" src="{% static 'django_cmdbar/palette.js' %}"></script>
+{% endif %}

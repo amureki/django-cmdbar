@@ -1,7 +1,7 @@
-# Djangonaut
+# Django CmdBar
 
-[![Build](https://img.shields.io/github/actions/workflow/status/amureki/djangonaut/tests.yml?branch=main)](https://github.com/amureki/djangonaut/actions/workflows/tests.yml)
-[![Latest PyPI version](https://img.shields.io/pypi/v/djangonaut.svg)](https://pypi.org/project/djangonaut/)
+[![Build](https://img.shields.io/github/actions/workflow/status/amureki/django-cmdbar/tests.yml?branch=main)](https://github.com/amureki/django-cmdbar/actions/workflows/tests.yml)
+[![Latest PyPI version](https://img.shields.io/pypi/v/django-cmdbar.svg)](https://pypi.org/project/django-cmdbar/)
 
 A navigation palette for Django admin. Press Cmd+K or Ctrl+K to find models,
 search records, or jump to a record by primary key.
@@ -13,20 +13,20 @@ middleware, or additional URLs.
 
 **Start with your models:** press Cmd+K or Ctrl+K to browse the models you can access.
 
-![Djangonaut's empty search showing Articles, Departments, Groups, and Users.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-models.png)
+![Django CmdBar's empty search showing Articles, Departments, Groups, and Users.](https://raw.githubusercontent.com/amureki/django-cmdbar/main/docs/images/django-cmdbar-models.png)
 
 **Search records:** `user alice` opens the Users list filtered by “alice”.
 
-![Djangonaut showing the query user alice and the result Search for alice.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-search.png)
+![Django CmdBar showing the query user alice and the result Search for alice.](https://raw.githubusercontent.com/amureki/django-cmdbar/main/docs/images/django-cmdbar-search.png)
 
 **Jump to a record:** `user#42` opens the user with primary key 42.
 
-![Djangonaut showing the query user#42 and the result Open record #42.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut-record.png)
+![Django CmdBar showing the query user#42 and the result Open record #42.](https://raw.githubusercontent.com/amureki/django-cmdbar/main/docs/images/django-cmdbar-record.png)
 
 <details>
 <summary>Built-in query guide</summary>
 
-![Djangonaut's query guide showing commands to open model lists, find records, search, and add records.](https://raw.githubusercontent.com/amureki/djangonaut/main/docs/images/djangonaut.png)
+![Django CmdBar's query guide showing commands to open model lists, find records, search, and add records.](https://raw.githubusercontent.com/amureki/django-cmdbar/main/docs/images/django-cmdbar.png)
 
 </details>
 
@@ -35,15 +35,15 @@ middleware, or additional URLs.
 **Install the package, add one app, and you're ready.**
 
 ```sh
-uv pip install djangonaut
+uv pip install django-cmdbar
 ```
 
-Add `djangonaut` **before** `django.contrib.admin` in `INSTALLED_APPS`:
+Add `django_cmdbar` **before** `django.contrib.admin` in `INSTALLED_APPS`:
 
 ```python
 INSTALLED_APPS = [
     # ...
-    "djangonaut",
+    "django_cmdbar",
     "django.contrib.admin",
     # ...
 ]
@@ -97,20 +97,20 @@ If your project overrides `admin/base_site.html`, extend `admin/base_site.html`
 and preserve `block.super` in the `extrastyle` and `extrabody` blocks.
 
 For templates that bypass that chain, add the assets and tag explicitly instead
-of using Djangonaut's template extension:
+of using Django CmdBar's template extension:
 
 ```django
 {% extends "admin/base.html" %}
-{% load static djangonaut %}
+{% load static django_cmdbar %}
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'djangonaut/palette.css' %}">
+  <link rel="stylesheet" href="{% static 'django_cmdbar/palette.css' %}">
 {% endblock %}
 
 {% block extrabody %}
   {{ block.super }}
-  {% djangonaut %}
+  {% django_cmdbar %}
 {% endblock %}
 ```
 
@@ -119,7 +119,7 @@ view wrapper, put the `AdminSite` instance in the template context and pass it t
 the tag:
 
 ```django
-{% djangonaut site=admin_site %}
+{% django_cmdbar site=admin_site %}
 ```
 
 ## Development
@@ -133,5 +133,5 @@ uv run ruff format --check .
 uv build
 ```
 
-Djangonaut is under development. Its integration and query syntax can change
+Django CmdBar is under development. Its integration and query syntax can change
 before the first stable release.

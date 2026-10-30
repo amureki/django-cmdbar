@@ -1,16 +1,16 @@
-const dialog = document.getElementById("djangonaut");
+const dialog = document.getElementById("django_cmdbar");
 
 if (dialog) {
   const { getResults } = await import(dialog.dataset.searchUrl);
   const catalog = JSON.parse(
-    document.getElementById("djangonaut-data").textContent,
+    document.getElementById("django_cmdbar-data").textContent,
   );
   const input = dialog.querySelector("input");
-  const closeButton = dialog.querySelector(".djangonaut-close");
-  const helpButton = dialog.querySelector(".djangonaut-help-button");
+  const closeButton = dialog.querySelector(".django_cmdbar-close");
+  const helpButton = dialog.querySelector(".django_cmdbar-help-button");
   const list = dialog.querySelector("ul");
-  const empty = dialog.querySelector(".djangonaut-empty");
-  const guide = dialog.querySelector("#djangonaut-guide");
+  const empty = dialog.querySelector(".django_cmdbar-empty");
+  const guide = dialog.querySelector("#django_cmdbar-guide");
   let results = [];
   let selected = 0;
   let previousFocus;
@@ -38,26 +38,26 @@ if (dialog) {
     input.setAttribute("aria-expanded", String(!showHelp));
     input.setAttribute(
       "aria-describedby",
-      showHelp ? "djangonaut-guide" : "djangonaut-help",
+      showHelp ? "django_cmdbar-guide" : "django_cmdbar-help",
     );
     results = showHelp ? [] : getResults(input.value, catalog);
     list.replaceChildren();
     empty.hidden = showHelp || results.length > 0;
     results.forEach((result, index) => {
       const option = document.createElement("li");
-      option.id = `djangonaut-option-${index}`;
+      option.id = `django_cmdbar-option-${index}`;
       option.setAttribute("role", "option");
       option.setAttribute("aria-disabled", String(!result.url));
       const label = document.createElement("span");
-      label.className = "djangonaut-name";
+      label.className = "django_cmdbar-name";
       label.textContent = result.label;
       const app = document.createElement("span");
-      app.className = "djangonaut-app";
+      app.className = "django_cmdbar-app";
       app.textContent = result.key;
       option.append(label, app);
       if (result.detail) {
         const detail = document.createElement("span");
-        detail.className = "djangonaut-detail";
+        detail.className = "django_cmdbar-detail";
         detail.textContent = result.detail;
         option.append(detail);
       }
