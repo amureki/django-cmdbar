@@ -19,8 +19,12 @@
         <dt><code>model text</code></dt><dd>{% translate "Search within a model" %}</dd>
         <dt><code>model +</code></dt><dd>{% translate "Add a record" %}</dd>
       </dl>
-      <p>{% translate "Use Up and Down to select and Enter to open. Escape closes the palette." %}</p>
-      <p>{% translate "Ctrl/Command + Enter opens a new tab." %}</p>
+      <p>
+        {% blocktranslate %}Use <kbd>Up</kbd> <kbd>Down</kbd> to select and <kbd>Enter</kbd> to open. <kbd>Esc</kbd> closes the palette.{% endblocktranslate %}
+      </p>
+      <p>
+        {% blocktranslate %}<kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Enter</kbd> opens a new tab.{% endblocktranslate %}
+      </p>
       <p>
         <a href="https://github.com/amureki/django-cmdbar" target="_blank" rel="noopener noreferrer">{% translate "GitHub repository" %}</a>
         · <a href="https://github.com/amureki/django-cmdbar/issues/new" target="_blank" rel="noopener noreferrer">{% translate "Report an issue" %}</a>
