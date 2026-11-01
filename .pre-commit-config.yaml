@@ -1,0 +1,79 @@
+# nodeenv cannot install current prerelease Node.js versions.
+default_language_version:
+  node: system
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-ast
+      - id: check-json
+      - id: pretty-format-json
+        args: [--autofix]
+      - id: check-toml
+      - id: check-xml
+      - id: check-symlinks
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: check-executables-have-shebangs
+      - id: end-of-file-fixer
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
+        exclude: ^tests/(admin|models|settings|urls)\.py$
+      - id: no-commit-to-branch
+        args: [--branch, main]
+      - id: detect-private-key
+  - repo: https://github.com/codingjoe/esupgrade
+    rev: "2026.1.2"
+    hooks:
+      - id: esupgrade
+  - repo: https://github.com/oxc-project/mirrors-oxlint
+    rev: v1.89.0
+    hooks:
+      - id: oxlint
+  - repo: https://github.com/oxc-project/mirrors-oxfmt
+    rev: v0.74.0
+    hooks:
+      - id: oxfmt
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.22.0
+    hooks:
+      - id: pyupgrade
+        args: [--py311-plus]
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-config
+          - mdformat-beautysh
+          - mdformat-footnote
+          - mdformat-gfm
+          - mdformat-gfm-alerts
+          - mdformat-ruff
+          - mdformat-web
+          - mdformat-frontmatter
+        args: ["--number"]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.30.3
+    hooks:
+      - id: pyproject-fmt
+        args: ["--table-format", "long"]
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.21.0
+    hooks:
+      - id: yamlfmt
+  - repo: https://github.com/UnknownPlatypus/djangofmt-pre-commit
+    rev: v1.1.0
+    hooks:
+      - id: djangofmt
+ci:
+  skip:
+    - no-commit-to-branch
