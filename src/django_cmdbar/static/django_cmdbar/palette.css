@@ -1,20 +1,42 @@
+/* Keep the dialog and its backdrop independent of framework resets. */
 #django_cmdbar {
-  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
   inset-block-start: min(16vh, 8rem);
-  margin-block: 0;
+  inset-block-end: auto;
+  box-sizing: border-box;
+  block-size: auto;
   inline-size: min(36rem, calc(100% - 2rem));
   max-block-size: calc(100dvh - min(16vh, 8rem) - 1rem);
+  margin-block: 0;
+  margin-inline: auto;
   padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   background: var(--body-bg);
   color: var(--body-fg);
   font-family: var(--font-family-primary);
+  opacity: 1;
   overflow: auto;
+  transform: none;
+  translate: none;
+  scale: 1;
+  transition: none;
+}
+
+#django_cmdbar:not([open]) {
+  display: none;
+}
+
+#django_cmdbar[open] {
+  display: block;
 }
 
 #django_cmdbar::backdrop {
   background: rgb(0 0 0 / 20%);
+  background: light-dark(rgb(0 0 0 / 20%), rgb(0 0 0 / 50%));
+  opacity: 1;
+  transition: none;
 }
 
 #django_cmdbar .django_cmdbar-search {
