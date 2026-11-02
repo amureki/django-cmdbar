@@ -271,6 +271,71 @@ async def test_mobile_layout_and_admin_theme(admin_page, theme):
     )
 
 
+async def test_dialog_survives_framework_dialog_resets(admin_page):
+    await admin_page.add_style_tag(
+        content="""
+        *,
+        ::before,
+        ::after,
+        ::backdrop {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border: 0 solid;
+        }
+
+        dialog {
+            inset-block: 0;
+            max-width: none;
+            max-height: none;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+        }
+
+        dialog[open] {
+            opacity: 1;
+        }
+
+        dialog::backdrop {
+            background: transparent;
+            opacity: 0;
+        }
+        """
+    )
+    await toggle_palette(admin_page)
+    dialog = admin_page.locator("#django_cmdbar")
+    box = await dialog.bounding_box()
+    viewport = admin_page.viewport_size
+    assert abs(box["x"] + box["width"] / 2 - viewport["width"] / 2) < 1
+    assert box["x"] >= 0
+    assert box["y"] >= 0
+    assert box["x"] + box["width"] <= viewport["width"]
+    assert box["y"] + box["height"] <= viewport["height"]
+    backdrop = await dialog.evaluate(
+        """element => {
+            const style = getComputedStyle(element, "::backdrop")
+            return {
+                background: style.backgroundColor,
+                opacity: style.opacity,
+            }
+        }"""
+    )
+    assert backdrop["background"] not in {"transparent", "rgba(0, 0, 0, 0)"}
+    assert backdrop["opacity"] == "1"
+
+    for theme, background in (
+        ("light", "rgba(0, 0, 0, 0.2)"),
+        ("dark", "rgba(0, 0, 0, 0.5)"),
+    ):
+        await admin_page.evaluate("theme => document.documentElement.dataset.theme = theme", theme)
+        assert (
+            await dialog.evaluate(
+                'element => getComputedStyle(element, "::backdrop").backgroundColor'
+            )
+            == background
+        )
+
+
 async def test_manifest_static_assets_without_unhashed_files(admin_page, settings, tmp_path):
     settings.STATIC_ROOT = tmp_path
     settings.STORAGES = {
