@@ -23,16 +23,7 @@ middleware, or additional URLs.
 
 ![Django CmdBar showing the query user#42 and the result Open record #42.](https://raw.githubusercontent.com/amureki/django-cmdbar/main/docs/images/django-cmdbar-record.png)
 
-<details>
-<summary>Built-in query guide</summary>
-
-![Django CmdBar's query guide showing commands to open model lists, find records, search, and add records.](https://raw.githubusercontent.com/amureki/django-cmdbar/main/docs/images/django-cmdbar.png)
-
-</details>
-
 ## Install
-
-**Install the package, add one app, and you're ready.**
 
 ```sh
 uv pip install django-cmdbar
@@ -49,8 +40,7 @@ INSTALLED_APPS = [
 ]
 ```
 
-Open Django admin and press **Cmd+K** or **Ctrl+K**. That's it—no extra settings,
-URLs, middleware, or migrations to configure.
+Open Django admin and press **Cmd+K** or **Ctrl+K**.
 
 ## Queries
 
