@@ -64,7 +64,7 @@
 }
 
 #django_cmdbar .django_cmdbar-search button:hover {
-  background: var(--darkened-bg);
+  background: var(--selected-bg);
   color: var(--body-fg);
 }
 
@@ -130,7 +130,24 @@
 }
 
 #django_cmdbar kbd {
-  font: inherit;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1.25rem;
+  block-size: 1.25rem;
+  gap: 0.25rem;
+  padding-inline: 0.25rem;
+  border-radius: 4px;
+  background: var(--darkened-bg);
+  color: var(--body-quiet-color);
+  font-family: var(--font-family-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+  pointer-events: none;
 }
 
 #django_cmdbar [hidden] {
@@ -185,6 +202,10 @@
 }
 
 @media (forced-colors: active) {
+  #django_cmdbar kbd {
+    border: 1px solid CanvasText;
+  }
+
   #django_cmdbar-results li[aria-selected="true"] {
     outline: 1px solid Highlight;
     outline-offset: -1px;
