@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+      - run: uv build
+      - run: uv run --no-project --with twine twine check --strict dist/*
+      - name: Check installed wheel assets
+        run: |
+          uv run --no-project --with ./dist/*.whl python - <<'PY'
+          from importlib.resources import files
+
+          package = files("django_cmdbar")
+          for path in (
+              "templates/admin/base_site.html",
+              "templates/django_cmdbar/palette.html",
+              "static/django_cmdbar/palette.css",
+              "static/django_cmdbar/palette.js",
+              "static/django_cmdbar/search.js",
+          ):
+              if not package.joinpath(path).is_file():
+                  raise SystemExit(f"Wheel is missing {path}")
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: distributions
+          path: dist/
+          if-no-files-found: error
