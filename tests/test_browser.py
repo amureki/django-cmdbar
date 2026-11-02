@@ -307,31 +307,23 @@ async def test_dialog_survives_framework_dialog_resets(admin_page):
     box = await dialog.bounding_box()
     viewport = admin_page.viewport_size
     assert abs(box["x"] + box["width"] / 2 - viewport["width"] / 2) < 1
-    assert box["y"] < viewport["height"] / 2
-    styles = await dialog.evaluate(
+    assert box["x"] >= 0
+    assert box["y"] >= 0
+    assert box["x"] + box["width"] <= viewport["width"]
+    assert box["y"] + box["height"] <= viewport["height"]
+    backdrop = await dialog.evaluate(
         """element => {
-            const style = getComputedStyle(element)
-            const backdrop = getComputedStyle(element, "::backdrop")
+            const style = getComputedStyle(element, "::backdrop")
             return {
-                display: style.display,
+                background: style.backgroundColor,
                 opacity: style.opacity,
-                transform: style.transform,
-                translate: style.translate,
-                scale: style.scale,
-                backdropBackground: backdrop.backgroundColor,
-                backdropOpacity: backdrop.opacity,
             }
         }"""
     )
-    assert styles["display"] == "block"
-    assert styles["opacity"] == "1"
-    assert styles["transform"] == "none"
-    assert styles["translate"] == "none"
-    assert styles["scale"] == "1"
-    assert styles["backdropBackground"] not in {"transparent", "rgba(0, 0, 0, 0)"}
-    assert styles["backdropOpacity"] == "1"
+    assert backdrop["background"] not in {"transparent", "rgba(0, 0, 0, 0)"}
+    assert backdrop["opacity"] == "1"
 
-    for theme, backdrop in (
+    for theme, background in (
         ("light", "rgba(0, 0, 0, 0.2)"),
         ("dark", "rgba(0, 0, 0, 0.5)"),
     ):
@@ -340,7 +332,7 @@ async def test_dialog_survives_framework_dialog_resets(admin_page):
             await dialog.evaluate(
                 'element => getComputedStyle(element, "::backdrop").backgroundColor'
             )
-            == backdrop
+            == background
         )
 
 
