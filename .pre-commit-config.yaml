@@ -36,24 +36,12 @@ repos:
     rev: v0.74.0
     hooks:
       - id: oxfmt
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.22.0
-    hooks:
-      - id: pyupgrade
-        args: [--py311-plus]
   - repo: https://github.com/hukkin/mdformat
     rev: 1.0.0
     hooks:
       - id: mdformat
         additional_dependencies:
-          - mdformat-config
-          - mdformat-beautysh
-          - mdformat-footnote
           - mdformat-gfm
-          - mdformat-gfm-alerts
-          - mdformat-ruff
-          - mdformat-web
-          - mdformat-frontmatter
         args: ["--number"]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.3
