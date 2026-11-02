@@ -2,13 +2,13 @@
 {% load static django_cmdbar %}
 
 {% block extrastyle %}
-  {{ block.super }}
-  {% if has_permission and not is_popup %}
-    <link rel="stylesheet" href="{% static 'django_cmdbar/palette.css' %}">
-  {% endif %}
+    {{ block.super }}
+    {% if has_permission and not is_popup %}
+        <link rel="stylesheet" href="{% static 'django_cmdbar/palette.css' %}">
+    {% endif %}
 {% endblock %}
 
 {% block extrabody %}
-  {{ block.super }}
-  {% django_cmdbar %}
+    {{ block.super }}
+    {% django_cmdbar %}
 {% endblock %}

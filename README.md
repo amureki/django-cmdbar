@@ -46,14 +46,14 @@ Open Django admin and press **Cmd+K** or **Ctrl+K**.
 
 For Django's built-in User model:
 
-| Query | Result |
-| --- | --- |
-| `user` | User list |
-| `user#42` | User with primary key 42 |
-| `user #42` | Same record |
+| Query        | Result                             |
+| ------------ | ---------------------------------- |
+| `user`       | User list                          |
+| `user#42`    | User with primary key 42           |
+| `user #42`   | Same record                        |
 | `user alice` | User list filtered with `?q=alice` |
-| `user +` | User creation form |
-| `auth.User` | User list in the auth app |
+| `user +`     | User creation form                 |
+| `auth.User`  | User list in the auth app          |
 
 Type `?` or click the **?** button to show a short syntax guide.
 

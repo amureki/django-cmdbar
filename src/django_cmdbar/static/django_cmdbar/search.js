@@ -1,53 +1,55 @@
 function parseQuery(raw, models) {
-  const query = raw.trim();
-  const match = /^(\S+?)(?:\s*#([\s\S]*)|\s+([\s\S]*))?$/.exec(query);
-  if (!match) return { head: "", action: "list", value: "" };
+  const query = raw.trim()
+  const match = /^(\S+?)(?:\s*#([\s\S]*)|\s+([\s\S]*))?$/.exec(query)
+  if (!match) return { head: "", action: "list", value: "" }
 
-  let [, head, pk, rest] = match;
-  const names = new Set(models.flatMap((model) =>
-    [model.name, ...model.keywords, model.key.replace(".", " ")]
-      .filter((name) => /\s/.test(name))
-      .map(normalize),
-  ));
+  let [, head, pk, rest] = match
+  const names = new Set(
+    models.flatMap((model) =>
+      [model.name, ...model.keywords, model.key.replace(".", " ")]
+        .filter((name) => /\s/.test(name))
+        .map(normalize),
+    ),
+  )
   // A complete multiword model name takes precedence over a shorter model prefix.
   for (const boundary of query.matchAll(/(?=\s|#|$)/g)) {
-    const prefix = query.slice(0, boundary.index).trimEnd();
-    if (!names.has(normalize(prefix))) continue;
-    head = prefix;
-    const suffix = query.slice(boundary.index).trim();
-    pk = suffix.startsWith("#") ? suffix.slice(1) : undefined;
-    rest = suffix;
+    const prefix = query.slice(0, boundary.index).trimEnd()
+    if (!names.has(normalize(prefix))) continue
+    head = prefix
+    const suffix = query.slice(boundary.index).trim()
+    pk = suffix.startsWith("#") ? suffix.slice(1) : undefined
+    rest = suffix
   }
-  if (pk !== undefined) return { head, action: "change", value: pk.trim() };
-  const value = (rest || "").trim();
-  if (value === "+") return { head, action: "add", value: "" };
-  return { head, action: value ? "search" : "list", value };
+  if (pk !== undefined) return { head, action: "change", value: pk.trim() }
+  const value = (rest || "").trim()
+  if (value === "+") return { head, action: "add", value: "" }
+  return { head, action: value ? "search" : "list", value }
 }
 
 function normalize(text) {
-  return text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+  return text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase()
 }
 
 function score(query, candidate) {
-  const text = normalize(candidate);
-  if (!query) return 1;
-  if (text === query) return 100;
-  if (text.startsWith(query)) return 80 + query.length / text.length;
-  if (text.includes(query)) return 60;
+  const text = normalize(candidate)
+  if (!query) return 1
+  if (text === query) return 100
+  if (text.startsWith(query)) return 80 + query.length / text.length
+  if (text.includes(query)) return 60
 
-  let position = -1;
-  let gaps = 0;
+  let position = -1
+  let gaps = 0
   for (const char of query) {
-    const next = text.indexOf(char, position + 1);
-    if (next === -1) return 0;
-    gaps += next - position - 1;
-    position = next;
+    const next = text.indexOf(char, position + 1)
+    if (next === -1) return 0
+    gaps += next - position - 1
+    position = next
   }
-  return 40 / (1 + gaps);
+  return 40 / (1 + gaps)
 }
 
 function matchModels({ head, action, value }, catalog) {
-  const query = normalize(head);
+  const query = normalize(head)
 
   return catalog.models.flatMap((model) => {
     const names = query.includes(".")
@@ -56,66 +58,52 @@ function matchModels({ head, action, value }, catalog) {
           model.name,
           ...model.keywords,
           ...(query.includes(" ") ? [model.key.replace(".", " ")] : []),
-        ];
-    const rank = Math.max(...names.map((word) => score(query, word)));
-    if (!rank) return [];
+        ]
+    const rank = Math.max(...names.map((word) => score(query, word)))
+    if (!rank) return []
 
     let url = {
       list: model.list_url,
       search: model.searchable ? model.list_url : null,
       change: model.change_url,
       add: model.add_url,
-    }[action];
-    if (!url) return [];
+    }[action]
+    if (!url) return []
 
-    let detail = catalog.labels[action];
+    let detail = catalog.labels[action]
     if (action === "search") {
-      const params = new URLSearchParams({ q: value });
-      url = `${url}${url.includes("?") ? "&" : "?"}${params}`;
+      const params = new URLSearchParams({ q: value })
+      url = `${url}${url.includes("?") ? "&" : "?"}${params}`
     } else if (action === "change") {
       // Django admin quoting must precede URI encoding, including for string primary keys.
-      const pk = Array.from(
-        value,
-        (char) => catalog.quote_map[char] ?? char,
-      ).join("");
+      const pk = Array.from(value, (char) => catalog.quote_map[char] ?? char).join("")
       url = value
-        ? url.replace(
-            catalog.pk_placeholder,
-            encodeURIComponent(pk.toWellFormed()),
-          )
-        : null;
-      if (!value) detail = catalog.labels.record_id;
+        ? url.replace(catalog.pk_placeholder, encodeURIComponent(pk.toWellFormed()))
+        : null
+      if (!value) detail = catalog.labels.record_id
     }
 
     return [
       {
         label: model.name,
         key: model.key,
-        detail: detail.replace("%(value)s", () =>
-          action === "add" ? model.singular : value,
-        ),
+        detail: detail.replace("%(value)s", () => (action === "add" ? model.singular : value)),
         url,
         rank,
       },
-    ];
-  });
+    ]
+  })
 }
 
 export function getResults(raw, catalog) {
-  const query = parseQuery(raw, catalog.models);
-  const results = matchModels(query, catalog);
+  const query = parseQuery(raw, catalog.models)
+  const results = matchModels(query, catalog)
   if (query.action === "search") {
-    const modelNames = matchModels(
-      { head: raw.trim(), action: "list", value: "" },
-      catalog,
-    );
-    for (const result of modelNames) result.rank += 100;
-    results.push(...modelNames);
+    const modelNames = matchModels({ head: raw.trim(), action: "list", value: "" }, catalog)
+    for (const result of modelNames) result.rank += 100
+    results.push(...modelNames)
   }
   return results.sort(
-    (a, b) =>
-      b.rank - a.rank ||
-      a.label.localeCompare(b.label) ||
-      a.key.localeCompare(b.key),
-  );
+    (a, b) => b.rank - a.rank || a.label.localeCompare(b.label) || a.key.localeCompare(b.key),
+  )
 }
